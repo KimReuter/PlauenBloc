@@ -53,9 +53,9 @@ The app supports both customers and operators of the climbing gym by providing a
 
 > In development – core MVP features are being implemented.
 
-- [x] Firebase Auth setup (user roles)
-- [x] UI layout & navigation
-- [x] Interactive map with markers
+- [ ] Firebase Auth setup (user roles)
+- [ ] UI layout & navigation
+- [ ] Interactive map with markers
 - [ ] Boulder Detail View
 - [ ] Rating & Comments
 - [ ] Route creation/editing for operators
