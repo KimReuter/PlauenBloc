@@ -51,15 +51,22 @@ The app supports both customers and operators of the climbing gym by providing a
 
 ## 🧪 Project Status
 
-> In development – core MVP features are being implemented.
+> In development – currently in the concept and early setup phase.
 
-- [ ] Firebase Auth setup (user roles)
-- [ ] UI layout & navigation
-- [ ] Interactive map with markers
-- [ ] Boulder Detail View
-- [ ] Rating & Comments
-- [ ] Route creation/editing for operators
+### ✅ Completed
+- [x] Defined core **User Personas** (climber & operator)
+- [x] Created detailed **User Stories**
+- [x] Outlined initial app structure and feature scope
 
+### 🧩 In Progress / Planned
+- [ ] Creating UI prototypes in **Figma**
+- [ ] Firebase Authentication setup (including user role distinction)
+- [ ] UI layout & navigation flow with Jetpack Compose
+- [ ] Interactive map with markers for boulders
+- [ ] Boulder Detail View (bottom sheet or screen)
+- [ ] User rating & comment functionality
+- [ ] Boulder creation/editing for operators
+      
 ---
 
 ## 🤝 Contributing
