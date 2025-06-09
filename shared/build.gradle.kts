@@ -15,24 +15,43 @@ kotlin {
             }
         }
     }
-    
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach {
-        it.binaries.framework {
-            baseName = "shared"
-            isStatic = true
-        }
-    }
+
+
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
 
     sourceSets {
-        commonMain.dependencies {
-            //put your multiplatform dependencies here
+        val commonMain by getting {
+            dependencies {
+                implementation("dev.gitlive:firebase-auth:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                implementation(libs.koin.core)
+            }
         }
-        commonTest.dependencies {
-            implementation(libs.kotlin.test)
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        val androidMain by getting {
+            dependencies {
+                implementation("dev.gitlive:firebase-auth-android:1.8.0")
+            }
+        }
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+
+        val iosMain by creating {
+            dependsOn(commonMain)
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
+
+            dependencies {
+                implementation("dev.gitlive:firebase-auth-ios:1.8.0")
+            }
         }
     }
 }

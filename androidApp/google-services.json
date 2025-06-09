@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "440645994032",
+    "project_id": "plauenbloc",
+    "storage_bucket": "plauenbloc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:440645994032:android:4a0fd04b573a6d4bf80ff5",
+        "android_client_info": {
+          "package_name": "com.example.plauenblod"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQwPWWXjaCnMUUNstiwvJM5jTDzPORMd0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
