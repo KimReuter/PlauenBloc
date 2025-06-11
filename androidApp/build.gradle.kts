@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.compose.compiler)
     id("com.google.gms.google-services")
+    alias(libs.plugins.jetbrains.kotlin.serialization)
+
 }
 
 android {
@@ -46,12 +48,20 @@ dependencies {
     implementation(libs.compose.material3)
     implementation(libs.androidx.activity.compose)
 
-    // Firebase AUth
-    implementation(platform("com.google.firebase:firebase-bom:33.15.0"))
-    implementation("com.google.firebase:firebase-auth")
-
     // Koin
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
     debugImplementation(libs.compose.ui.tooling)
+
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization)
+
+    // Icons
+    implementation("androidx.compose.material:material-icons-extended")
+
+    // Lottie Animation
+    dependencies {
+        implementation("com.airbnb.android:lottie-compose:6.0.0")
+    }
 }

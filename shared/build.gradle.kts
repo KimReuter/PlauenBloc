@@ -36,7 +36,6 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                implementation("dev.gitlive:firebase-auth-android:1.8.0")
             }
         }
         val iosX64Main by getting

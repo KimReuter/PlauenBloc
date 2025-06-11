@@ -13,31 +13,29 @@ class FirebaseAuthRepository(
 ) : AuthRepository {
 
     private val scope = MainScope()
+
     private val _isLoggedIn = MutableStateFlow(false)
     override val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
 
-    override fun signUp(email: String, password: String, onSuccess: () -> Unit, onError: (Throwable) -> Unit) {
+    private val _isInitialized = MutableStateFlow(false)
+    override val isInitialized: StateFlow<Boolean> = _isInitialized
+
+    init {
         scope.launch {
-            try {
-                auth.createUserWithEmailAndPassword(email, password)
-                _isLoggedIn.value = true
-                onSuccess()
-            } catch (e: Exception) {
-                onError(e)
-            }
+            _isLoggedIn.value = auth.currentUser != null
+            _isInitialized.value = true
         }
     }
 
-    override fun signIn(email: String, password: String, onSuccess: () -> Unit, onError: (Throwable) -> Unit) {
-        scope.launch {
-            try {
-                auth.signInWithEmailAndPassword(email, password)
-                _isLoggedIn.value = true
-                onSuccess()
-            } catch (e: Exception) {
-                onError(e)
-            }
-        }
+    override suspend fun signUp(userName: String, email: String, password: String) {
+        auth.createUserWithEmailAndPassword(email, password)
+        auth.currentUser?.updateProfile(displayName = userName)
+        _isLoggedIn.value = true
+    }
+
+    override suspend fun signIn(email: String, password: String) {
+        auth.signInWithEmailAndPassword(email, password)
+        _isLoggedIn.value = true
     }
 
     override fun signOut() {

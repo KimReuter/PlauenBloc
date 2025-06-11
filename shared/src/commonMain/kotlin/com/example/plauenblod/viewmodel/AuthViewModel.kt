@@ -10,27 +10,42 @@ class AuthViewModel(
     private val coroutineScope: CoroutineScope
 ) {
     val isLoggedIn: StateFlow<Boolean> = authRepository.isLoggedIn
+    val isInitialized: StateFlow<Boolean> = authRepository.isInitialized
 
-    fun signIn(email: String, password: String, onError: (Throwable) -> Unit = {}) {
+    fun signIn(email: String, password: String, onResult: (Result<Unit>) -> Unit) {
         coroutineScope.launch {
-            authRepository.signIn(
-                email = email,
-                password = password,
-                onSuccess = { /* Logging oder Navigation */ },
-                onError = onError
-            )
+            try {
+                authRepository.signIn(email, password)
+                onResult(Result.success(Unit))
+            } catch (e: Exception) {
+                onResult(Result.failure(e))
+            }
         }
     }
 
-    fun signUp(email: String, password: String, onError: (Throwable) -> Unit = {}) {
-        coroutineScope.launch {
-            authRepository.signUp(
-                email = email,
-                password = password,
-                onSuccess = { /* direkt einloggen */},
-                onError = onError
-            )
+    fun signUp(userName: String, email: String, password: String, onResult: (Result<Unit>) -> Unit) {
+        if (!isValidPassword(password)) {
+            onResult(Result.failure(IllegalArgumentException("Passwort ist zu schwach")))
+            return
         }
+
+        coroutineScope.launch {
+            try {
+                authRepository.signUp(userName, email, password)
+                onResult(Result.success(Unit))
+            } catch (e: Exception) {
+                onResult(Result.failure(e))
+            }
+        }
+    }
+
+    fun isValidPassword(password: String): Boolean {
+        val minLength = 8
+        val hasUppercase = password.any { it.isUpperCase() }
+        val hasDigit = password.any { it.isDigit() }
+        val hasSpecial = password.any { !it.isLetterOrDigit() }
+
+        return password.length >= minLength && hasUppercase && hasDigit && hasSpecial
     }
 
     fun signOut() {

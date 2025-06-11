@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:440645994032:android:4a0fd04b573a6d4bf80ff5",
+        "mobilesdk_app_id": "1:440645994032:android:5b26dd0237527d67f80ff5",
         "android_client_info": {
-          "package_name": "com.example.plauenblod"
+          "package_name": "com.example.plauenblod.android"
         }
       },
       "oauth_client": [],
