@@ -28,14 +28,24 @@ class FirebaseAuthRepository(
     }
 
     override suspend fun signUp(userName: String, email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password)
-        auth.currentUser?.updateProfile(displayName = userName)
-        _isLoggedIn.value = true
+        try {
+            auth.createUserWithEmailAndPassword(email, password)
+            auth.currentUser?.updateProfile(displayName = userName)
+            _isLoggedIn.value = true
+        } catch (e: Exception) {
+            println("Fehler beim Registrieren: ${e.message}")
+            throw e
+        }
     }
 
     override suspend fun signIn(email: String, password: String) {
-        auth.signInWithEmailAndPassword(email, password)
-        _isLoggedIn.value = true
+        try {
+            auth.signInWithEmailAndPassword(email, password)
+            _isLoggedIn.value = true
+        } catch (e: Exception) {
+            println("🚨 Fehler beim Login: ${e.message}")
+            throw e
+        }
     }
 
     override fun signOut() {

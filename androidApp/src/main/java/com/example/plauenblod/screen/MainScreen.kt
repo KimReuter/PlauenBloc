@@ -87,8 +87,19 @@ fun AppStart() {
             composable<SettingsRoute> {
                 SettingsScreen()
             }
-        }
 
+            composable<MapRoute> {
+                MapScreen()
+            }
+
+            composable<ListRoute> {
+                SettingsScreen()
+            }
+
+            composable<CommunityRoute> {
+                SettingsScreen()
+            }
+        }
     }
 }
 
