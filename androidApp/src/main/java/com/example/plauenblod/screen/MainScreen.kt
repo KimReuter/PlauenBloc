@@ -89,7 +89,7 @@ fun AppStart() {
             }
 
             composable<MapRoute> {
-                MapScreen()
+                RouteScreen()
             }
 
             composable<ListRoute> {

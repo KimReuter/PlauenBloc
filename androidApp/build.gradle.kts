@@ -58,10 +58,15 @@ dependencies {
     implementation(libs.kotlinx.serialization)
 
     // Icons
-    implementation("androidx.compose.material:material-icons-extended")
+    implementation(libs.androidx.material.icons.extended)
 
     // Lottie Animation
-    dependencies {
-        implementation("com.airbnb.android:lottie-compose:6.0.0")
-    }
+    implementation(libs.lottie.compose)
+
+
+    // Firestore
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.app)
+
 }

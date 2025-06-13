@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,9 +28,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.plauenblod.android.R
+import com.example.plauenblod.component.authentication.AnimatedLogo
 import com.example.plauenblod.component.authentication.AuthBackground
+import com.example.plauenblod.component.authentication.ResetPasswordDialog
 import com.example.plauenblod.component.authentication.SignInSection
 import com.example.plauenblod.component.authentication.SignUpSection
+import com.example.plauenblod.data.auth.AuthResult
 import com.example.plauenblod.viewmodel.AuthViewModel
 import org.koin.compose.koinInject
 
@@ -40,21 +45,19 @@ fun AuthScreen(
 ) {
     var signInOrSignUp by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showResetDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
+    var resetSuccess by remember { mutableStateOf<String?>(null) }
 
-    AuthBackground {
         Column(
             modifier = modifier
                 .fillMaxSize()
+                .background(Color.White)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "PlauenBloc",
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                color = Color.White
-            )
+            AnimatedLogo(modifier = Modifier)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -67,26 +70,43 @@ fun AuthScreen(
                     SignInSection(
                         onLoginClick = { email, password ->
                             viewModel.signIn(email, password) { result ->
-                                result.onSuccess {
-                                    errorMessage = null
-                                    onLoginSuccess()
-                                }
-                                result.onFailure { error ->
-                                    errorMessage = error.message ?: "Unbekannter Fehler beim Login"
+                                when (result) {
+                                    is AuthResult.Success -> {
+                                        errorMessage = null
+                                        onLoginSuccess
+                                    }
+                                    is AuthResult.Error -> errorMessage = result.error.message
                                 }
                             }
-                        }
+                        },
+                        onForgotPasswordClick = { showResetDialog = true }
                     )
+
+                    if (showResetDialog) {
+                        ResetPasswordDialog(
+                            email = resetEmail,
+                            onEmailChange = { resetEmail = it },
+                            onDismiss = { showResetDialog = false },
+                            onSend = {
+                                viewModel.sendPasswordReset(resetEmail) { result ->
+                                    resetSuccess = result.getOrNull()?.let {
+                                        "E-Mail zum Zurücksetzen wurde gesendet."
+                                    } ?: "Fehler beim Versenden der E-Mail."
+                                    showResetDialog = false
+                                }
+                            }
+                        )
+                    }
                 } else {
                     SignUpSection(
                         onRegisterClick = { userName, email, password ->
                             viewModel.signUp(userName, email, password) { result ->
-                                result.onSuccess {
-                                    errorMessage = null
-                                    onLoginSuccess()
-                                }
-                                result.onFailure { error ->
-                                    errorMessage = error.message ?: "Registrierung fehlgeschlagen"
+                                when (result) {
+                                    is AuthResult.Success -> {
+                                        errorMessage = null
+                                        onLoginSuccess()
+                                    }
+                                    is AuthResult.Error -> errorMessage = result.error.message
                                 }
                             }
                         }
@@ -103,9 +123,8 @@ fun AuthScreen(
                 Text(
                     if (signInOrSignUp) "Noch keinen Account? Registrieren"
                     else "Bereits registriert? Einloggen",
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
     }
-}

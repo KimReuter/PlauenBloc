@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,7 +24,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun SignInSection(
     modifier: Modifier = Modifier,
-    onLoginClick: (String, String) -> Unit
+    onLoginClick: (String, String) -> Unit,
+    onForgotPasswordClick: (String) -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -42,7 +44,8 @@ fun SignInSection(
             value = password,
             onValueChange = { password = it },
             label = "Passwort",
-            leadingIcon = Icons.Default.Lock
+            leadingIcon = Icons.Default.Lock,
+            isPassword = true
         )
 
         Spacer(modifier = modifier.padding(8.dp))
@@ -51,6 +54,14 @@ fun SignInSection(
             onClick = { onLoginClick(email, password) }
         ) {
             Text("Einloggen")
+        }
+
+        Spacer(modifier = modifier.padding(8.dp))
+
+        TextButton(
+            onClick = { onForgotPasswordClick(email) }
+        ) {
+            Text("Passwort vergessen?")
         }
     }
 

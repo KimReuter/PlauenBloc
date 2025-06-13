@@ -24,8 +24,10 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("dev.gitlive:firebase-auth:1.8.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                implementation(libs.firebase.auth)
+                implementation(libs.firebase.firestore)
+                implementation(libs.firebase.app)
+                implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.koin.core)
             }
         }
@@ -49,7 +51,6 @@ kotlin {
             iosSimulatorArm64Main.dependsOn(this)
 
             dependencies {
-                implementation("dev.gitlive:firebase-auth-ios:1.8.0")
             }
         }
     }
