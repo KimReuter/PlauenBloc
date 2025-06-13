@@ -17,10 +17,12 @@ The app supports both customers and operators of the climbing gym by providing a
 
 ## 🛠️ Tech Stack
 
-- **Kotlin** & **Jetpack Compose**
+- **Kotlin Multiplatform (KMP)**
+- **Jetpack Compose** (Android)
 - **Firebase Authentication** (User & Operator distinction)
 - **Firebase Firestore** (for Boulder data and user input)
 - **Clean Architecture** approach (UI, ViewModel, Repository layers)
+- **StateFlow**, **Coroutines**, **Compose Destinations** for navigation
 
 ---
 
@@ -29,6 +31,7 @@ The app supports both customers and operators of the climbing gym by providing a
 ### For Users:
 - 🔐 Login with Firebase
 - 🗺️ Interactive 2D map of the boulder gym
+- 📍 List view of all routes (in addition to map view)
 - 📍 Tap on markers to see Boulder details
 - ⭐ Rate how fun/beautiful a boulder is
 - 📝 Leave comments or attempt notes (e.g. “Sent on 3rd try!”)
@@ -51,12 +54,17 @@ The app supports both customers and operators of the climbing gym by providing a
 
 ## 🧪 Project Status
 
-> In development – currently in the concept and early setup phase.
+> In development – core MVP features are actively being implemented. Firebase Auth, role-based UI, and first screens are in place.
 
 ### ✅ Completed
 - [x] Defined core **User Personas** (climber & operator)
 - [x] Created detailed **User Stories**
 - [x] Outlined initial app structure and feature scope
+- [x] Integrated **Firebase Authentication**
+- [x] Set up **user role distinction** (User vs Operator)
+- [x] Connected to **Firebase Firestore**
+- [x] Created base **UI layout & navigation**
+- [x] Implemented **AuthScreen** with animated UI
 
 ### 🧩 In Progress / Planned
 - [ ] Creating UI prototypes in **Figma**
