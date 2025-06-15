@@ -2,7 +2,11 @@ package com.example.plauenblod.viewmodel
 
 import com.example.plauenblod.data.auth.AuthRepository
 import com.example.plauenblod.data.auth.AuthResult
+import com.example.plauenblod.model.UserRole
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
@@ -13,10 +17,28 @@ class AuthViewModel(
     val isLoggedIn: StateFlow<Boolean> = authRepository.isLoggedIn
     val isInitialized: StateFlow<Boolean> = authRepository.isInitialized
 
+    private val _userRole = MutableStateFlow<UserRole?>(null)
+    val userRole: StateFlow<UserRole?> = _userRole
+
     fun signIn(email: String, password: String, onResult: (AuthResult) -> Unit) {
         coroutineScope.launch {
             val result = authRepository.signIn(email, password)
+            if (result is AuthResult.Success) {
+                val userId = Firebase.auth.currentUser?.uid
+                userId?.let {
+                    val role = authRepository.fetchUserRole(it)
+                    _userRole.value = role
+                }
+            }
             onResult(result)
+        }
+    }
+
+    fun loadUserRole() {
+        val userId = Firebase.auth.currentUser?.uid ?: return
+        coroutineScope.launch {
+            val role = authRepository.fetchUserRole(userId)
+            _userRole.value = role
         }
     }
 

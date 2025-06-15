@@ -17,6 +17,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
@@ -30,14 +31,23 @@ import com.example.plauenblod.component.ScreenTitle
 import com.example.plauenblod.component.map.BoulderSearchBar
 import com.example.plauenblod.component.map.FirstHallMapScreen
 import com.example.plauenblod.component.map.SecondHallMapScreen
+import com.example.plauenblod.component.routes.CreateRouteSheet
+import com.example.plauenblod.component.routes.MenuButton
+import com.example.plauenblod.viewmodel.AuthViewModel
+import com.example.plauenblod.viewmodel.RouteViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun RouteScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    routeViewModel: RouteViewModel = koinInject(),
+    authViewModel: AuthViewModel = koinInject()
 ) {
     var selectedHall by remember { mutableStateOf("first") }
     var query by remember { mutableStateOf("") }
     var showMap by remember { mutableStateOf(true) }
+    val userRole by authViewModel.userRole.collectAsState()
+    var showCreateSheet by remember { mutableStateOf(false) }
 
     Box(
         modifier = modifier
@@ -61,15 +71,15 @@ fun RouteScreen(
                     onQueryChanged = { query = it },
                     modifier = Modifier.weight(1f))
 
-                IconButton(
-                    onClick = { },
-
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Menu,
-                        contentDescription = "Menü"
-                    )
-                }
+                MenuButton (
+                    currentUserRole = userRole,
+                    onCreateRouteClick = {
+                        showCreateSheet = true
+                    },
+                    onFilterClick = {
+                        println("Filter geöffnet")
+                    }
+                )
 
             }
 
@@ -112,6 +122,16 @@ fun RouteScreen(
                 } else {
                     //SecondHallListScreen()
                 }
+            }
+
+            if (showCreateSheet) {
+                CreateRouteSheet(
+                    onDismiss = { showCreateSheet = false },
+                    onSave = { route ->
+                        routeViewModel.createRoute(route)
+                        showCreateSheet = false
+                    }
+                )
             }
         }
     }

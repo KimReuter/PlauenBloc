@@ -22,6 +22,12 @@ fun PlauenBlocRoot(
         Log.d("PlauenBloc", "SplashScreen shown: ${!isInitialized}")
     }
 
+    LaunchedEffect(isLoggedIn) {
+        if (isLoggedIn) {
+            viewModel.loadUserRole()
+        }
+    }
+
     when {
         !isInitialized -> {
             SplashScreen()

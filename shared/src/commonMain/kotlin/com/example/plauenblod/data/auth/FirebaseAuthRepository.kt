@@ -1,5 +1,6 @@
 package com.example.plauenblod.data.auth
 
+import com.example.plauenblod.model.UserRole
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseAuth
 import dev.gitlive.firebase.auth.FirebaseAuthException
@@ -33,6 +34,9 @@ class FirebaseAuthRepository(
         return try {
             auth.createUserWithEmailAndPassword(email, password)
             auth.currentUser?.updateProfile(displayName = userName)
+            auth.currentUser?.uid?.let {
+                addUserToFirestore(it, userName, UserRole.USER)
+            }
             _isLoggedIn.value = true
             AuthResult.Success
         } catch (e: Exception) {
@@ -49,10 +53,10 @@ class FirebaseAuthRepository(
         }
     }
 
-    override suspend fun addUserToFirestore(userId: String, userName: String, role: String) {
+    override suspend fun addUserToFirestore(userId: String, userName: String, role: UserRole) {
         val userData = mapOf(
             "userName" to userName,
-            "role" to role
+            "role" to role.name
         )
         Firebase.firestore.collection("users").document(userId).set(userData)
     }
@@ -78,6 +82,17 @@ class FirebaseAuthRepository(
             }
 
             AuthResult.Error(error)
+        }
+    }
+
+    override suspend fun fetchUserRole(userId: String): UserRole? {
+        return try {
+            val document = Firebase.firestore.collection("users").document(userId).get()
+            val roleString = document.get<String>("role")
+            UserRole.valueOf(roleString ?: "USER")
+        } catch (e: Exception) {
+            println("⚠️ Fehler beim Abrufen der Rolle: ${e.message}")
+            null
         }
     }
 
