@@ -8,8 +8,8 @@ enum class HoldColor(override val label: String): LabeledEnum {
     GREEN("Grün"),
     RED("Rot"),
     BROWN("Braun"),
-    PRUPLE("Lila"),
+    PURPLE("Lila"),
     BLACK("Schwarz"),
-    TURQUIS("Türkis"),
+    TURQUOISE("Türkis"),
     GREY("Grau")
 }

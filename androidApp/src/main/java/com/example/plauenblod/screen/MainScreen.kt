@@ -7,8 +7,8 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -18,7 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.plauenblod.component.navigation.TabItem
+import com.example.plauenblod.model.HallSection
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -39,13 +41,16 @@ object SettingsRoute
 @Serializable
 object AuthRoute
 
+@Serializable
+data class SelectPointRoute(val hallSectionName: String)
+
 
 @Composable
 fun AppStart() {
     val navController = rememberNavController()
     var selectedTab by rememberSaveable { mutableStateOf(TabItem.HOME) }
 
-    Scaffold (
+    Scaffold(
         bottomBar = {
             NavigationBar(
                 containerColor = Color.Transparent,
@@ -69,7 +74,7 @@ fun AppStart() {
                 }
             }
         }
-    ){ innerPadding ->
+    ) { innerPadding ->
 
         NavHost(
             navController = navController,
@@ -89,7 +94,7 @@ fun AppStart() {
             }
 
             composable<MapRoute> {
-                RouteScreen()
+                RouteScreen(navController = navController)
             }
 
             composable<ListRoute> {
@@ -98,6 +103,20 @@ fun AppStart() {
 
             composable<CommunityRoute> {
                 SettingsScreen()
+            }
+
+            composable<SelectPointRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<SelectPointRoute>()
+                val hallSection = HallSection.valueOf(args.hallSectionName)
+
+                SelectPointScreen(
+                    hallSection = hallSection,
+                    onPointSelected = { x, y ->
+                        backStackEntry.savedStateHandle.set("x", x)
+                        backStackEntry.savedStateHandle.set("y", y)
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }

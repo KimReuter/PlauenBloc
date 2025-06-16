@@ -69,4 +69,5 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.app)
 
+    implementation(libs.androidx.runtime.livedata)
 }
