@@ -25,6 +25,7 @@ import com.example.plauenblod.component.LabeledButton
 import com.example.plauenblod.component.LabeledTextField
 import com.example.plauenblod.component.map.BackMap
 import com.example.plauenblod.component.map.FrontMap
+import com.example.plauenblod.extension.toColor
 import com.example.plauenblod.model.Difficulty
 import com.example.plauenblod.model.HallSection
 import com.example.plauenblod.model.HoldColor
@@ -132,7 +133,10 @@ fun CreateRouteForm(
                 when (hall) {
                     HallSection.FRONT -> FrontMap(
                         selectedPoint = selectedPoint,
-                        onTap = onPointSelected
+                        onTap = onPointSelected,
+                        difficultyColor = difficulty?.toColor(),
+                        number = number
+
                     )
                     HallSection.BACK -> BackMap(
                         selectedPoint = selectedPoint,
