@@ -104,20 +104,6 @@ fun AppStart() {
             composable<CommunityRoute> {
                 SettingsScreen()
             }
-
-            composable<SelectPointRoute> { backStackEntry ->
-                val args = backStackEntry.toRoute<SelectPointRoute>()
-                val hallSection = HallSection.valueOf(args.hallSectionName)
-
-                SelectPointScreen(
-                    hallSection = hallSection,
-                    onPointSelected = { x, y ->
-                        backStackEntry.savedStateHandle.set("x", x)
-                        backStackEntry.savedStateHandle.set("y", y)
-                        navController.popBackStack()
-                    }
-                )
-            }
         }
     }
 }

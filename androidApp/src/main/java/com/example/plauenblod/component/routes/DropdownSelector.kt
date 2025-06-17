@@ -34,7 +34,7 @@ import com.example.plauenblod.extension.toColor
 fun <T> DropdownSelector(
     label: String,
     options: List<T>,
-    selected: T,
+    selected: T?,
     onSelected: (T) -> Unit,
     modifier: Modifier = Modifier
 ) {

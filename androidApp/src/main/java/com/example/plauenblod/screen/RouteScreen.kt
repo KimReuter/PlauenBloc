@@ -131,7 +131,6 @@ fun RouteScreen(
                     sheetState = sheetState
                 ) {
                     CreateRouteSheet(
-                        navController = navController,
                         onDismiss = { showCreateSheet = false }
                     )
                 }

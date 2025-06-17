@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
-sealed class NavigationEvent {
-    data class NavigateToSelectPoint(val hallSection: HallSection) : NavigationEvent()
-}
+
 
 class RouteViewModel (
     private val repo: RouteRepository,
@@ -20,9 +18,6 @@ class RouteViewModel (
 ) {
     private val _routeCreated = MutableStateFlow<Result<Unit>?>(null)
     val routeCreated: StateFlow<Result<Unit>?> = _routeCreated
-
-    private val _navigation = MutableSharedFlow<NavigationEvent>()
-    val navigation = _navigation.asSharedFlow()
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
@@ -46,12 +41,6 @@ class RouteViewModel (
 
     fun clearError() {
         _errorMessage.value = null
-    }
-
-    fun onSelectPointClicked(hallSection: HallSection) {
-        scope.launch {
-            _navigation.emit(NavigationEvent.NavigateToSelectPoint(hallSection))
-        }
     }
 
 }
