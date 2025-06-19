@@ -25,12 +25,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 import com.example.plauenblod.component.ScreenTitle
 import com.example.plauenblod.component.map.BoulderSearchBar
 import com.example.plauenblod.component.map.FirstHallMapScreen
 import com.example.plauenblod.component.map.SecondHallMapScreen
 import com.example.plauenblod.component.routes.CreateRouteSheet
 import com.example.plauenblod.component.routes.MenuButton
+import com.example.plauenblod.extension.hallSection
+import com.example.plauenblod.model.HallSection
 import com.example.plauenblod.viewmodel.AuthViewModel
 import com.example.plauenblod.viewmodel.RouteViewModel
 import org.koin.compose.koinInject
@@ -41,7 +44,7 @@ fun RouteScreen(
     modifier: Modifier = Modifier,
     routeViewModel: RouteViewModel = koinInject(),
     authViewModel: AuthViewModel = koinInject(),
-    navController: NavController
+    navController: NavHostController
 ) {
     var selectedHall by remember { mutableStateOf("first") }
     var query by remember { mutableStateOf("") }
@@ -49,6 +52,11 @@ fun RouteScreen(
     val userRole by authViewModel.userRole.collectAsState()
     var showCreateSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+    val allRoutes by routeViewModel.routes.collectAsState()
+    val filteredRoutes = allRoutes.filter {
+        it.sector.hallSection() == if (selectedHall == "first") HallSection.FRONT else HallSection.BACK
+    }
+
     Box(
         modifier = modifier
             .padding(16.dp)
@@ -113,13 +121,19 @@ fun RouteScreen(
 
             if (selectedHall == "first") {
                 if (showMap) {
-                    FirstHallMapScreen()
+                    FirstHallMapScreen(
+                        routes = filteredRoutes,
+                        navController = navController
+                        )
                 } else {
                     //FirstHallListScreen()
                 }
             } else {
                 if (showMap) {
-                    SecondHallMapScreen()
+                    SecondHallMapScreen(
+                        routes = filteredRoutes,
+                        navController = navController
+                    )
                 } else {
                     //SecondHallListScreen()
                 }

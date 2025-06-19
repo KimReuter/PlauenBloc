@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,15 +22,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
+import com.example.plauenblod.android.R
 import com.example.plauenblod.component.LabeledButton
 import com.example.plauenblod.component.LabeledTextField
-import com.example.plauenblod.component.map.BackMap
-import com.example.plauenblod.component.map.FrontMap
+import com.example.plauenblod.component.map.BoulderMap
 import com.example.plauenblod.extension.toColor
 import com.example.plauenblod.model.Difficulty
 import com.example.plauenblod.model.HallSection
 import com.example.plauenblod.model.HoldColor
+import com.example.plauenblod.model.RelativePosition
 import com.example.plauenblod.model.Sector
 
 @Composable
@@ -59,6 +63,13 @@ fun CreateRouteForm(
     selectedPoint: Offset?,
     onPointSelected: (Offset) -> Unit,
 ) {
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+    val maxHeight = screenWidth * 0.449f
+    val imageResId = when (hall) {
+        HallSection.FRONT -> R.drawable.boulderhalle_grundriss_vordere_halle_kleiner
+        HallSection.BACK -> R.drawable.boulderhalle_grundriss_hinterehalle_kleiner
+    }
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -125,25 +136,18 @@ fun CreateRouteForm(
             Spacer(modifier = Modifier.height(16.dp))
             Text("Wähle einen Punkt auf der Karte:")
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp) // Höhe nach Wunsch
-            ) {
-                when (hall) {
-                    HallSection.FRONT -> FrontMap(
-                        selectedPoint = selectedPoint,
-                        onTap = onPointSelected,
-                        difficultyColor = difficulty?.toColor(),
-                        number = number
+                BoulderMap(
+                    imageResId = imageResId,
+                    selectedPoint = selectedPoint?.let { RelativePosition(it.x, it.y) },
+                    difficultyColor = difficulty?.toColor(),
+                    number = number,
+                    onTap = { relativePosition ->
+                        onPointSelected(Offset(relativePosition.x, relativePosition.y))
+                    },
+                    enableZoom = false,
+                    routes = emptyList()
+                )
 
-                    )
-                    HallSection.BACK -> BackMap(
-                        selectedPoint = selectedPoint,
-                        onTap = onPointSelected
-                    )
-                }
-            }
 
             Button(
                 onClick = { onDismissMap() },

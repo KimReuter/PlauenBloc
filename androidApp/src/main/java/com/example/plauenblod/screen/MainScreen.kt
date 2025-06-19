@@ -42,8 +42,9 @@ object SettingsRoute
 object AuthRoute
 
 @Serializable
-data class SelectPointRoute(val hallSectionName: String)
-
+data class BoulderDetailRoute(
+    val routeId: String
+)
 
 @Composable
 fun AppStart() {
@@ -103,6 +104,14 @@ fun AppStart() {
 
             composable<CommunityRoute> {
                 SettingsScreen()
+            }
+
+            composable<BoulderDetailRoute> { backStackEntry ->
+                val routeArgs = backStackEntry.toRoute<BoulderDetailRoute>()
+                RouteDetailScreen(
+                    onBackClick = { navController.popBackStack() },
+                    routeId = routeArgs.routeId
+                )
             }
         }
     }
