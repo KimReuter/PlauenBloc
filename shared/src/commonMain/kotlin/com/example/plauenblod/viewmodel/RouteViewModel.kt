@@ -40,8 +40,13 @@ class RouteViewModel (
             } else {
                 println("✅ RouteViewModel → createRoute(): Erfolgreich!")
                 _errorMessage.value = null
+                loadRoutes()
             }
         }
+    }
+
+    fun clearRouteCreatedStatus() {
+        _routeCreated.value = null
     }
 
     fun clearError() {

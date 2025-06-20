@@ -47,21 +47,10 @@ fun CreateRouteSheet(
     onDismiss: () -> Unit,
     onCreateClick: () -> Unit,
     isCreateEnabled: Boolean,
-    errorMessage: String?,
-    viewModel: RouteViewModel = koinInject()
+    errorMessage: String?
 ) {
-    val routeCreated by viewModel.routeCreated.collectAsState()
     var showSuccessDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
-
-    LaunchedEffect(routeCreated) {
-        if (routeCreated?.isSuccess == true) {
-            showSuccessDialog = true
-            delay(2000)
-            showSuccessDialog = false
-            onDismiss()
-        }
-    }
 
     if (showSuccessDialog) {
         RouteCreatedDialog(onDismiss = {

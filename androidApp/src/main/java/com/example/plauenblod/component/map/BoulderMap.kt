@@ -58,34 +58,10 @@ fun BoulderMap(
                     it.size.height.toFloat()
                 )
             }
-            .then(
-                if (onTap != null) Modifier.pointerInput(Unit) {
-                    detectTapGestures { tapOffset ->
-                        val relativeX = (tapOffset.x / layoutSize.x).coerceIn(0f, 1f)
-                        val relativeY = (tapOffset.y / layoutSize.y).coerceIn(0f, 1f)
-                        onTap(RelativePosition(relativeX, relativeY))
-                    }
-                } else Modifier
-            )
     ) {
         Canvas(
             modifier = Modifier
                 .matchParentSize()
-                .then(
-                    if (enableZoom) Modifier.pointerInput(Unit) {
-                        detectTransformGestures { _, pan, zoom, _ ->
-                            scale *= zoom
-                            offset += pan
-                        }
-                    } else Modifier
-                )
-                .graphicsLayer(
-                    scaleX = if (enableZoom) scale else 1f,
-                    scaleY = if (enableZoom) scale else 1f,
-                    translationX = if (enableZoom) offset.x else 0f,
-                    translationY = if (enableZoom) offset.y else 0f
-
-                )
                 .pointerInput(routes) {
                     detectTapGestures { tapOffset ->
                         val tappedRoute = routes.firstOrNull { route ->
@@ -94,11 +70,22 @@ fun BoulderMap(
                             distance <= markerRadius
                         }
 
-                        tappedRoute?.let { route ->
-                            onRouteClick?.invoke(route)
+                        if (tappedRoute != null) {
+                            onRouteClick?.invoke(tappedRoute)
+                        } else {
+
+                            val relativeX = (tapOffset.x / layoutSize.x).coerceIn(0f, 1f)
+                            val relativeY = (tapOffset.y / layoutSize.y).coerceIn(0f, 1f)
+                            onTap?.invoke(RelativePosition(relativeX, relativeY))
                         }
                     }
                 }
+                .graphicsLayer(
+                    scaleX = if (enableZoom) scale else 1f,
+                    scaleY = if (enableZoom) scale else 1f,
+                    translationX = if (enableZoom) offset.x else 0f,
+                    translationY = if (enableZoom) offset.y else 0f
+                )
         ) {
             drawImage(
                 image = imageBitmap,

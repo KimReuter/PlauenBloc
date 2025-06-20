@@ -30,7 +30,8 @@ import com.example.plauenblod.screen.BoulderDetailRoute
 @Composable
 fun FirstHallMapScreen(
     routes: List<Route>,
-    navController: NavHostController
+    navController: NavHostController,
+    refreshKey: Int
 ) {
     BoulderMap(
         imageResId = R.drawable.boulderhalle_grundriss_vordere_halle_kleiner,
@@ -47,7 +48,8 @@ fun FirstHallMapScreen(
 @Composable
 fun SecondHallMapScreen(
     routes: List<Route>,
-    navController: NavHostController
+    navController: NavHostController,
+    refreshKey: Int
 ) {
     BoulderMap(
         imageResId = R.drawable.boulderhalle_grundriss_hinterehalle_kleiner,

@@ -154,7 +154,7 @@ fun CreateRouteForm(
                     onTap = { relativePosition ->
                         onPointSelected(Offset(relativePosition.x, relativePosition.y))
                     },
-                    enableZoom = false,
+                    enableZoom = true,
                     routes = emptyList()
                 )
 
