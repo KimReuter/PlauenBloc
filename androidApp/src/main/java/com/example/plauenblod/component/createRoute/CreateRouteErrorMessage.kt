@@ -1,4 +1,4 @@
-package com.example.plauenblod.component.routes
+package com.example.plauenblod.component.createRoute
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme

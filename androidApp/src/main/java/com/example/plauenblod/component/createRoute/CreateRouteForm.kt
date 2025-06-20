@@ -1,28 +1,28 @@
-package com.example.plauenblod.component.routes
+package com.example.plauenblod.component.createRoute
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import com.example.plauenblod.android.R
 import com.example.plauenblod.component.LabeledButton
@@ -62,14 +62,23 @@ fun CreateRouteForm(
     onDismissMap: () -> Unit,
     selectedPoint: Offset?,
     onPointSelected: (Offset) -> Unit,
+    onCancelClick: () -> Unit
 ) {
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    val maxHeight = screenWidth * 0.449f
     val imageResId = when (hall) {
         HallSection.FRONT -> R.drawable.boulderhalle_grundriss_vordere_halle_kleiner
         HallSection.BACK -> R.drawable.boulderhalle_grundriss_hinterehalle_kleiner
     }
 
+    Box(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        IconButton(
+            onClick = { onCancelClick() },
+            modifier = Modifier.align(Alignment.TopEnd)
+        ) {
+            Icon(Icons.Default.Close, contentDescription = "Abbrechen")
+        }
+    }
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -77,6 +86,7 @@ fun CreateRouteForm(
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
     ) {
+
         Text(
             text = "Neue Route erstellen",
             color = MaterialTheme.colorScheme.primary,

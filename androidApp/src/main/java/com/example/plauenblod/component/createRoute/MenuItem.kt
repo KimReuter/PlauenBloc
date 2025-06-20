@@ -1,4 +1,4 @@
-package com.example.plauenblod.component.routes
+package com.example.plauenblod.component.createRoute
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
