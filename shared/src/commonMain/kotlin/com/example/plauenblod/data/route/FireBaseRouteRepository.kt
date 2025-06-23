@@ -38,7 +38,14 @@ class FireBaseRouteRepository: RouteRepository {
     }
 
     override suspend fun deleteRoute(routeId: String): Result<Unit> {
-        TODO("Not yet implemented")
+        return try {
+            Firebase.firestore.collection("routes").document(routeId).delete()
+            println("🗑️ FirebaseRepo -> deleteRoute(): Route $routeId gelöscht.")
+            Result.success(Unit)
+        } catch (e: Exception) {
+            println("❌ FirebaseRepo → deleteRoute(): Fehler: ${e.message}")
+            Result.failure(e)
+        }
     }
 
     override suspend fun getAllRoutes(): List<Route> {

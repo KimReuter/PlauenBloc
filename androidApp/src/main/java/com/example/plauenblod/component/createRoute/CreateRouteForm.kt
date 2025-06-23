@@ -28,6 +28,7 @@ import com.example.plauenblod.android.R
 import com.example.plauenblod.component.LabeledButton
 import com.example.plauenblod.component.LabeledTextField
 import com.example.plauenblod.component.map.BoulderMap
+import com.example.plauenblod.extension.hallSection
 import com.example.plauenblod.extension.toColor
 import com.example.plauenblod.model.Difficulty
 import com.example.plauenblod.model.HallSection
@@ -62,7 +63,8 @@ fun CreateRouteForm(
     onDismissMap: () -> Unit,
     selectedPoint: Offset?,
     onPointSelected: (Offset) -> Unit,
-    onCancelClick: () -> Unit
+    onCancelClick: () -> Unit,
+    availableNumbers: List<Int>
 ) {
     val imageResId = when (hall) {
         HallSection.FRONT -> R.drawable.boulderhalle_grundriss_vordere_halle_kleiner
@@ -137,10 +139,14 @@ fun CreateRouteForm(
 
         IntDropdownSelector(
             label = "Nummer",
-            options = (1..25).toList(),
+            options = availableNumbers,
             selected = number,
             onSelected = onNumberChange
         )
+
+        if (availableNumbers.isEmpty()) {
+            Text("Alle Nummern im gewählten Sektor sind bereits vergeben", color = MaterialTheme.colorScheme.error)
+        }
 
         if (showMap) {
             Spacer(modifier = Modifier.height(16.dp))
@@ -155,7 +161,8 @@ fun CreateRouteForm(
                         onPointSelected(Offset(relativePosition.x, relativePosition.y))
                     },
                     enableZoom = true,
-                    routes = emptyList()
+                    routes = emptyList(),
+                    onRouteLongClick = { }
                 )
 
 

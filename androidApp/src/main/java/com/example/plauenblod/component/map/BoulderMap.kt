@@ -39,7 +39,8 @@ fun BoulderMap(
     enableZoom: Boolean = false,
     difficultyColor: Color? = null,
     number: Int? = null,
-    onRouteClick: ((Route) -> Unit)? = null
+    onRouteClick: ((Route) -> Unit)? = null,
+    onRouteLongClick: (Route) -> Unit
     ) {
 
     val density = LocalDensity.current
@@ -63,22 +64,35 @@ fun BoulderMap(
             modifier = Modifier
                 .matchParentSize()
                 .pointerInput(routes) {
-                    detectTapGestures { tapOffset ->
-                        val tappedRoute = routes.firstOrNull { route ->
-                            val center = Offset(route.x * layoutSize.x, route.y * layoutSize.y)
-                            val distance = (tapOffset - center).getDistance()
-                            distance <= markerRadius
-                        }
+                    detectTapGestures (
+                        onLongPress = { tapOffset ->
+                            val longPressedRoute = routes.firstOrNull { route ->
+                                val center = Offset(route.x * layoutSize.x, route.y * layoutSize.y)
+                                val distance = (tapOffset - center).getDistance()
+                                distance <= markerRadius
+                            }
 
-                        if (tappedRoute != null) {
-                            onRouteClick?.invoke(tappedRoute)
-                        } else {
+                            if (longPressedRoute != null) {
+                                onRouteLongClick(longPressedRoute)
+                            }
+                        },
+                        onTap = { tapOffset ->
+                            val tappedRoute = routes.firstOrNull { route ->
+                                val center = Offset(route.x * layoutSize.x, route.y * layoutSize.y)
+                                val distance = (tapOffset - center).getDistance()
+                                distance <= markerRadius
+                            }
 
-                            val relativeX = (tapOffset.x / layoutSize.x).coerceIn(0f, 1f)
-                            val relativeY = (tapOffset.y / layoutSize.y).coerceIn(0f, 1f)
-                            onTap?.invoke(RelativePosition(relativeX, relativeY))
+                            if (tappedRoute != null) {
+                                onRouteClick?.invoke(tappedRoute)
+                            } else {
+
+                                val relativeX = (tapOffset.x / layoutSize.x).coerceIn(0f, 1f)
+                                val relativeY = (tapOffset.y / layoutSize.y).coerceIn(0f, 1f)
+                                onTap?.invoke(RelativePosition(relativeX, relativeY))
+                            }
                         }
-                    }
+                    )
                 }
                 .graphicsLayer(
                     scaleX = if (enableZoom) scale else 1f,

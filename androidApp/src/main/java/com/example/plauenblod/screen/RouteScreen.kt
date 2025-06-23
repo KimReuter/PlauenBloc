@@ -50,6 +50,7 @@ import com.example.plauenblod.viewmodel.RouteViewModel
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import androidx.compose.runtime.key
+import com.example.plauenblod.component.editRoutes.RouteActionSheet
 
 private val OffsetSaver = Saver<Offset?, Map<String, Any>>(
     save = { offset -> offset?.let { mapOf("x" to it.x, "y" to it.y) } },
@@ -83,15 +84,24 @@ fun RouteScreen(
     // Route erstellen
     var name by rememberSaveable { mutableStateOf("") }
     var hall by rememberSaveable { mutableStateOf(HallSection.FRONT) }
-    var sector by rememberSaveable { mutableStateOf<Sector?>(null) }
-    var holdColor by rememberSaveable { mutableStateOf<HoldColor?>(null) }
-    var difficulty by rememberSaveable { mutableStateOf<Difficulty?>(null) }
+    var sector by rememberSaveable { mutableStateOf(Sector.entries.firstOrNull()) }
+    var holdColor by rememberSaveable { mutableStateOf(HoldColor.entries.firstOrNull()) }
+    var difficulty by rememberSaveable { mutableStateOf(Difficulty.entries.firstOrNull()) }
     var number by rememberSaveable { mutableIntStateOf(1) }
     var description by rememberSaveable { mutableStateOf("") }
     var setter by rememberSaveable { mutableStateOf("") }
     var selectedPoint: Offset? by rememberSaveable(stateSaver = OffsetSaver) { mutableStateOf(null) }
     val routeCreated by routeViewModel.routeCreated.collectAsState()
     var refreshKey by remember { mutableStateOf(0) }
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    val takenNumbers = allRoutes
+        .filter { it.sector == sector }
+        .map { it.number }
+    val availableNumbers = (1..25).filterNot { it in takenNumbers }
+
+    // Route bearbeiten
+    var selectedRoute by remember { mutableStateOf<Route?>(null) }
+    var showRouteMenu by remember { mutableStateOf(false) }
 
     // CancelDialog
     var showCancelDialog by remember { mutableStateOf(false) }
@@ -106,18 +116,10 @@ fun RouteScreen(
 
     LaunchedEffect(routeCreated) {
         if (routeCreated?.isSuccess == true) {
-            showCreateSheet = false
-            sheetState.hide()
-
             name = ""
             description = ""
             setter = ""
             selectedPoint = null
-            hall = HallSection.FRONT
-            sector = null
-            holdColor = null
-            difficulty = null
-            number = 1
 
             routeViewModel.clearError()
             routeViewModel.clearRouteCreatedStatus()
@@ -126,6 +128,14 @@ fun RouteScreen(
 
             navController.popBackStack()
             navController.navigate(MapRoute)
+
+            showSuccessDialog = true
+        }
+    }
+
+    LaunchedEffect(availableNumbers) {
+        if (availableNumbers.isNotEmpty()) {
+            number = availableNumbers.first()
         }
     }
 
@@ -197,7 +207,12 @@ fun RouteScreen(
                             FirstHallMapScreen(
                                 routes = filteredRoutes,
                                 navController = navController,
-                                refreshKey = refreshKey
+                                refreshKey = refreshKey,
+                                onRouteLongClick = {
+                                    println("Long press on route: ${it.name}")
+                                    selectedRoute = it
+                                    showRouteMenu = true
+                                }
                             )
                     } else {
                         //FirstHallListScreen()
@@ -207,7 +222,11 @@ fun RouteScreen(
                             SecondHallMapScreen(
                                 routes = filteredRoutes,
                                 navController = navController,
-                                refreshKey = refreshKey
+                                refreshKey = refreshKey,
+                                onRouteLongClick = { route ->
+                                    selectedRoute = route
+                                    showRouteMenu = true
+                                }
                             )
                     } else {
                         //SecondHallListScreen()
@@ -292,7 +311,16 @@ fun RouteScreen(
                             }
                         },
                         isCreateEnabled = isCreateEnabled,
-                        errorMessage = errorMessage
+                        errorMessage = errorMessage,
+                        showSuccessDialog = showSuccessDialog,
+                        onDismissSuccessDialog = {
+                            showSuccessDialog = false
+                            scope.launch {
+                                sheetState.hide()
+                                showCreateSheet = false
+                            }
+                        },
+                        availableNumbers = availableNumbers
                     )
                 }
             }
@@ -311,6 +339,19 @@ fun RouteScreen(
                         scope.launch {
                             sheetState.show()
                         }
+                    }
+                )
+            }
+
+            if (showRouteMenu && selectedRoute != null) {
+                RouteActionSheet(
+                    route = selectedRoute!!,
+                    onDismiss = { showRouteMenu = false },
+                    onEdit = { route ->
+
+                    },
+                    onDelete = { route ->
+                        routeViewModel.deleteRoute(route.id)
                     }
                 )
             }

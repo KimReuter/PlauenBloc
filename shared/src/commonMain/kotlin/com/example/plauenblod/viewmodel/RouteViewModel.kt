@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 
-class RouteViewModel (
+class RouteViewModel(
     private val repo: RouteRepository,
     private val scope: CoroutineScope
 ) {
@@ -56,6 +56,17 @@ class RouteViewModel (
     fun loadRoutes() {
         scope.launch {
             _routes.value = repo.getAllRoutes()
+        }
+    }
+
+    fun deleteRoute(id: String) {
+        scope.launch {
+            try {
+                repo.deleteRoute(id)
+                loadRoutes()
+            } catch (e: Exception) {
+                _errorMessage.value = "Fehler beim Löschen der Route: ${e.message}"
+            }
         }
     }
 

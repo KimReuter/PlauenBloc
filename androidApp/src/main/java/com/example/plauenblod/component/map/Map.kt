@@ -31,7 +31,8 @@ import com.example.plauenblod.screen.BoulderDetailRoute
 fun FirstHallMapScreen(
     routes: List<Route>,
     navController: NavHostController,
-    refreshKey: Int
+    refreshKey: Int,
+    onRouteLongClick: (Route) -> Unit
 ) {
     BoulderMap(
         imageResId = R.drawable.boulderhalle_grundriss_vordere_halle_kleiner,
@@ -40,7 +41,8 @@ fun FirstHallMapScreen(
         onTap = { },
         onRouteClick = { route ->
             navController.navigate(BoulderDetailRoute(route.id))
-        }
+        },
+        onRouteLongClick = onRouteLongClick
     )
 }
 
@@ -49,7 +51,8 @@ fun FirstHallMapScreen(
 fun SecondHallMapScreen(
     routes: List<Route>,
     navController: NavHostController,
-    refreshKey: Int
+    refreshKey: Int,
+    onRouteLongClick: (Route) -> Unit
 ) {
     BoulderMap(
         imageResId = R.drawable.boulderhalle_grundriss_hinterehalle_kleiner,
@@ -58,7 +61,8 @@ fun SecondHallMapScreen(
         onTap = { },
         onRouteClick = { route ->
             navController.navigate(BoulderDetailRoute(route.id))
-        }
+        },
+        onRouteLongClick = onRouteLongClick
     )
 }
 

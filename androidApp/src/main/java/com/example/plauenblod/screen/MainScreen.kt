@@ -66,9 +66,6 @@ fun AppStart() {
                                 imageVector = tabItem.tabIcon,
                                 contentDescription = "TabItem"
                             )
-                        },
-                        label = {
-                            Text(text = tabItem.tabTitle)
                         }
                     )
 

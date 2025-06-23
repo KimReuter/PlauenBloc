@@ -47,14 +47,16 @@ fun CreateRouteSheet(
     onDismiss: () -> Unit,
     onCreateClick: () -> Unit,
     isCreateEnabled: Boolean,
-    errorMessage: String?
+    errorMessage: String?,
+    showSuccessDialog: Boolean,
+    onDismissSuccessDialog: () -> Unit,
+    availableNumbers: List<Int>
 ) {
-    var showSuccessDialog by remember { mutableStateOf(false) }
     var showCancelDialog by remember { mutableStateOf(false) }
 
     if (showSuccessDialog) {
         RouteCreatedDialog(onDismiss = {
-            showSuccessDialog = false
+            onDismissSuccessDialog()
             onDismiss()
         })
     }
@@ -88,6 +90,7 @@ fun CreateRouteSheet(
         onDismissMap,
         selectedPoint,
         { onPointSelected(it) },
-        onCancelClick = { showCancelDialog = true }
+        onCancelClick = { showCancelDialog = true },
+        availableNumbers = availableNumbers
     )
 }
