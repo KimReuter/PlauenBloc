@@ -6,11 +6,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.plauenblod.model.Route
+import com.example.plauenblod.model.UserRole
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RouteActionSheet(
     route: Route,
+    userRole: UserRole,
     onDismiss: () -> Unit,
     onEdit: (Route) -> Unit,
     onDelete: (Route) -> Unit
@@ -29,29 +31,31 @@ fun RouteActionSheet(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(
-                onClick = {
-                    onEdit(route)
-                    onDismiss()
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Bearbeiten")
-            }
+            if (userRole == UserRole.OPERATOR) {
+                Button(
+                    onClick = {
+                        onEdit(route)
+                        onDismiss()
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Bearbeiten")
+                }
 
-            Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
-                onClick = {
-                    onDelete(route)
-                    onDismiss()
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.error
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Löschen")
+                Button(
+                    onClick = {
+                        onDelete(route)
+                        onDismiss()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Löschen")
+                }
             }
         }
     }

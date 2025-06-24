@@ -22,7 +22,7 @@ fun CreateRouteButton(
             .defaultMinSize(minHeight = 56.dp)
     ) {
         Text(
-            text = "Route erstellen",
+            text = "Route speichern",
             color = MaterialTheme.colorScheme.surface
         )
     }

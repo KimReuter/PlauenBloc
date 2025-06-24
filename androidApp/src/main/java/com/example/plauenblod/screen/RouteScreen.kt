@@ -1,5 +1,6 @@
 package com.example.plauenblod.screen
 
+import android.graphics.Point
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,8 +47,10 @@ import com.example.plauenblod.extension.toRelativePosition
 import com.example.plauenblod.model.Difficulty
 import com.example.plauenblod.model.HallSection
 import com.example.plauenblod.model.HoldColor
+import com.example.plauenblod.model.RelativePosition
 import com.example.plauenblod.model.Route
 import com.example.plauenblod.model.Sector
+import com.example.plauenblod.model.UserRole
 import com.example.plauenblod.viewmodel.AuthViewModel
 import com.example.plauenblod.viewmodel.RouteViewModel
 import com.example.plauenblod.viewmodel.state.DialogState
@@ -172,6 +175,8 @@ fun RouteScreen(
 
                 MenuButton(
                     currentUserRole = userRole,
+                    showMap = showMap,
+                    onToggleView = { showMap = !showMap },
                     onCreateRouteClick = {
                         showCreateSheet = true
                     },
@@ -255,7 +260,26 @@ fun RouteScreen(
                             }
                         },
                         onCreateClick = {
-                            if (formState.selectedPoint != null && formState.sector != null && formState.holdColor != null && formState.difficulty != null) {
+                            if (formState.isEditMode) {
+                                formState.routeId?.let { id ->
+                                    routeViewModel.editRoute(
+                                        userRole!!,
+                                        id,
+                                        Route(
+                                            id = id,
+                                            name = formState.name,
+                                            sector = formState.sector!!,
+                                            holdColor = formState.holdColor!!,
+                                            difficulty = formState.difficulty!!,
+                                            number = formState.number,
+                                            description = formState.description,
+                                            setter = formState.setter,
+                                            x = formState.selectedPoint!!.x,
+                                            y = formState.selectedPoint!!.y
+                                        )
+                                    )
+                                }
+                            } else {
                                 routeViewModel.createRoute(
                                     Route(
                                         id = "",
@@ -309,13 +333,26 @@ fun RouteScreen(
             if (showRouteMenu && selectedRoute != null) {
                 RouteActionSheet(
                     route = selectedRoute!!,
+                    userRole = userRole!!,
                     onDismiss = { showRouteMenu = false },
                     onEdit = { route ->
-
+                            formState = RouteFormState(
+                                routeId = route.id,
+                                name = route.name,
+                                isEditMode = true,
+                                sector = route.sector,
+                                holdColor = route.holdColor,
+                                difficulty = route.difficulty,
+                                number = route.number,
+                                description = route.description,
+                                setter = route.setter,
+                                selectedPoint = RelativePosition(route.x, route.y)
+                            )
+                            showCreateSheet = true
                     },
                     onDelete = {
-                        showRouteMenu = false
-                        dialogState = DialogState.ShowDeleteConfirm
+                            showRouteMenu = false
+                            dialogState = DialogState.ShowDeleteConfirm
                     }
                 )
             }
@@ -327,7 +364,7 @@ fun RouteScreen(
                         onConfirmDismiss = { dialogState = DialogState.Hidden },
                         onDeleteConfirmed = {
                             selectedRoute?.let { route ->
-                                routeViewModel.deleteRoute(route.id)
+                                routeViewModel.deleteRoute(userRole!! ,route.id)
                                 dialogState = DialogState.ShowDeleteSuccess
                                 selectedRoute = null
                             }
@@ -363,7 +400,7 @@ fun RouteScreen(
                     )
                 }
 
-                else -> {} // kein Dialog anzeigen
+                else -> {}
             }
         }
     }

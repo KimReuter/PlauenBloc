@@ -34,7 +34,23 @@ class FireBaseRouteRepository: RouteRepository {
     }
 
     override suspend fun editRoute(routeId: String, updatedRoute: Route): Result<Unit> {
-        TODO("Not yet implemented")
+        return try {
+            val routeMap = mapOf(
+                "name" to updatedRoute.name,
+                "sector" to updatedRoute.sector,
+                "holdColor" to updatedRoute.holdColor.name,
+                "difficulty" to updatedRoute.difficulty.name,
+                "number" to updatedRoute.number,
+                "description" to updatedRoute.description,
+                "setter" to updatedRoute.setter,
+                "x" to updatedRoute.x,
+                "y" to updatedRoute.y
+            )
+            Firebase.firestore.collection("routes").document(routeId).set(routeMap)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     override suspend fun deleteRoute(routeId: String): Result<Unit> {

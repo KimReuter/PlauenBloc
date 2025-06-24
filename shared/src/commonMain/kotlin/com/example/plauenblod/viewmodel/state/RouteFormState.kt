@@ -7,7 +7,9 @@ import com.example.plauenblod.model.RelativePosition
 import com.example.plauenblod.model.Sector
 
 data class RouteFormState(
+    val routeId: String = "",
     val name: String = "",
+    val isEditMode: Boolean = false,
     val hall: HallSection = HallSection.FRONT,
     val sector: Sector? = Sector.ROCO_DE_LA_FINESTRA,
     val holdColor: HoldColor? = HoldColor.GREEN,

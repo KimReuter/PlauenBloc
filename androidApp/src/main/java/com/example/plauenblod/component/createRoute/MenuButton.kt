@@ -7,6 +7,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -27,6 +29,8 @@ import com.example.plauenblod.model.UserRole
 @Composable
 fun MenuButton(
     currentUserRole: UserRole?,
+    showMap: Boolean,
+    onToggleView: () -> Unit,
     onCreateRouteClick: () -> Unit,
     onFilterClick: () -> Unit
 ) {
@@ -51,6 +55,23 @@ fun MenuButton(
                     shape = RoundedCornerShape(12.dp)
                 )
         ) {
+            DropdownMenuItem(
+                text = { Text(
+                    if(showMap) "Listenansicht" else "Kartenansicht",
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    fontWeight = FontWeight.SemiBold
+                    )},
+                leadingIcon = { Icon(
+                    if (showMap) Icons.Default.List else Icons.Default.Map,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary
+                ) },
+                onClick = {
+                    onToggleView()
+                    expanded = false
+                }
+            )
+
             if (currentUserRole == UserRole.OPERATOR) {
                 DropdownMenuItem(
                     text = { Text(
