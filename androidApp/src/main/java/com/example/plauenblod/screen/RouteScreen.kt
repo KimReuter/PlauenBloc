@@ -19,12 +19,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
-import androidx.compose.runtime.saveable.mapSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -34,12 +34,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.plauenblod.component.ScreenTitle
 import com.example.plauenblod.component.createRoute.CancelDialog
-import com.example.plauenblod.component.map.BoulderSearchBar
-import com.example.plauenblod.component.map.FirstHallMapScreen
-import com.example.plauenblod.component.map.SecondHallMapScreen
 import com.example.plauenblod.component.createRoute.CreateRouteSheet
 import com.example.plauenblod.component.createRoute.MenuButton
+import com.example.plauenblod.component.editRoutes.DeleteRouteDialogs
+import com.example.plauenblod.component.editRoutes.RouteActionSheet
+import com.example.plauenblod.component.map.BoulderSearchBar
+import com.example.plauenblod.component.map.HallSectionButtons
 import com.example.plauenblod.extension.hallSection
+import com.example.plauenblod.extension.toOffset
+import com.example.plauenblod.extension.toRelativePosition
 import com.example.plauenblod.model.Difficulty
 import com.example.plauenblod.model.HallSection
 import com.example.plauenblod.model.HoldColor
@@ -47,10 +50,12 @@ import com.example.plauenblod.model.Route
 import com.example.plauenblod.model.Sector
 import com.example.plauenblod.viewmodel.AuthViewModel
 import com.example.plauenblod.viewmodel.RouteViewModel
+import com.example.plauenblod.viewmodel.state.DialogState
+import com.example.plauenblod.viewmodel.state.RouteFormState
+import com.example.plauenblod.viewmodel.state.saver.RouteFormStateSaver
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
-import androidx.compose.runtime.key
-import com.example.plauenblod.component.editRoutes.RouteActionSheet
 
 private val OffsetSaver = Saver<Offset?, Map<String, Any>>(
     save = { offset -> offset?.let { mapOf("x" to it.x, "y" to it.y) } },
@@ -69,33 +74,26 @@ fun RouteScreen(
     authViewModel: AuthViewModel = koinInject(),
     navController: NavHostController
 ) {
-    var selectedHall by remember { mutableStateOf("first") }
+    var selectedHall by remember { mutableStateOf(HallSection.FRONT) }
     var query by remember { mutableStateOf("") }
     var showMap by remember { mutableStateOf(true) }
     val userRole by authViewModel.userRole.collectAsState()
     var showCreateSheet by remember { mutableStateOf(false) }
     val allRoutes by routeViewModel.routes.collectAsState()
     val filteredRoutes = allRoutes.filter {
-        it.sector.hallSection() == if (selectedHall == "first") HallSection.FRONT else HallSection.BACK
+        it.sector.hallSection() == selectedHall
     }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
     // Route erstellen
-    var name by rememberSaveable { mutableStateOf("") }
-    var hall by rememberSaveable { mutableStateOf(HallSection.FRONT) }
-    var sector by rememberSaveable { mutableStateOf(Sector.entries.firstOrNull()) }
-    var holdColor by rememberSaveable { mutableStateOf(HoldColor.entries.firstOrNull()) }
-    var difficulty by rememberSaveable { mutableStateOf(Difficulty.entries.firstOrNull()) }
-    var number by rememberSaveable { mutableIntStateOf(1) }
-    var description by rememberSaveable { mutableStateOf("") }
-    var setter by rememberSaveable { mutableStateOf("") }
-    var selectedPoint: Offset? by rememberSaveable(stateSaver = OffsetSaver) { mutableStateOf(null) }
+    var formState by rememberSaveable(stateSaver = RouteFormStateSaver.saver()) {
+        mutableStateOf(RouteFormState())
+    }
     val routeCreated by routeViewModel.routeCreated.collectAsState()
     var refreshKey by remember { mutableStateOf(0) }
-    var showSuccessDialog by remember { mutableStateOf(false) }
     val takenNumbers = allRoutes
-        .filter { it.sector == sector }
+        .filter { it.sector == formState.sector }
         .map { it.number }
     val availableNumbers = (1..25).filterNot { it in takenNumbers }
 
@@ -103,39 +101,49 @@ fun RouteScreen(
     var selectedRoute by remember { mutableStateOf<Route?>(null) }
     var showRouteMenu by remember { mutableStateOf(false) }
 
+    //Route löschen
+    var dialogState by remember { mutableStateOf<DialogState>(DialogState.Hidden) }
+
     // CancelDialog
     var showCancelDialog by remember { mutableStateOf(false) }
     val errorMessage by routeViewModel.errorMessage.collectAsState()
-    val isCreateEnabled = selectedPoint != null &&
-            name.isNotBlank() &&
-            setter.isNotBlank() &&
-            description.isNotBlank()
+    val isCreateEnabled = formState.selectedPoint != null &&
+            formState.name.isNotBlank() &&
+            formState.setter.isNotBlank() &&
+            formState.description.isNotBlank()
 
     val hasUnsavedData =
-        name.isNotBlank() || description.isNotBlank() || setter.isNotBlank() || selectedPoint != null
+        formState.name.isNotBlank() ||
+                formState.description.isNotBlank() ||
+                formState.setter.isNotBlank() ||
+                formState.selectedPoint != null
+
+    fun resetCreateRouteForm() {
+        formState = RouteFormState()
+        routeViewModel.clearError()
+    }
 
     LaunchedEffect(routeCreated) {
         if (routeCreated?.isSuccess == true) {
-            name = ""
-            description = ""
-            setter = ""
-            selectedPoint = null
-
-            routeViewModel.clearError()
+            resetCreateRouteForm()
             routeViewModel.clearRouteCreatedStatus()
-
             refreshKey++
-
             navController.popBackStack()
             navController.navigate(MapRoute)
-
-            showSuccessDialog = true
+            dialogState = DialogState.ShowCreateSuccess
         }
     }
 
     LaunchedEffect(availableNumbers) {
         if (availableNumbers.isNotEmpty()) {
-            number = availableNumbers.first()
+            formState = formState.copy(number = availableNumbers.first())
+        }
+    }
+
+    LaunchedEffect(dialogState) {
+        if (dialogState == DialogState.ShowDeleteSuccess) {
+            delay(2000)
+            dialogState = DialogState.Hidden
         }
     }
 
@@ -176,61 +184,26 @@ fun RouteScreen(
 
             Spacer(modifier = modifier.height(16.dp))
 
-            Row {
-                Button(
-                    onClick = { selectedHall = "second" },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedHall == "second") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    )
-                ) {
-                    Text("Hintere Halle")
-                }
-
-                Spacer(modifier = modifier.width(16.dp))
-
-                Button(
-                    onClick = { selectedHall = "first" },
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (selectedHall == "first") MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
-                    ),
-
-                    ) {
-                    Text("Vordere Halle")
-                }
-            }
+            HallSectionButtons(
+                selectedHall = selectedHall,
+                onHallSelected = { selectedHall = it },
+                modifier = Modifier.padding(top = 16.dp)
+            )
 
             key(refreshKey, selectedHall) {
-                if (selectedHall == "first") {
-                    if (showMap) {
-                            FirstHallMapScreen(
-                                routes = filteredRoutes,
-                                navController = navController,
-                                refreshKey = refreshKey,
-                                onRouteLongClick = {
-                                    println("Long press on route: ${it.name}")
-                                    selectedRoute = it
-                                    showRouteMenu = true
-                                }
-                            )
-                    } else {
-                        //FirstHallListScreen()
-                    }
+                if (showMap) {
+                    HallMapScreen(
+                        hall = selectedHall,
+                        routes = filteredRoutes,
+                        refreshKey = refreshKey,
+                        navController = navController,
+                        onRouteLongClick = {
+                            selectedRoute = it
+                            showRouteMenu = true
+                        }
+                    )
                 } else {
-                    if (showMap) {
-                            SecondHallMapScreen(
-                                routes = filteredRoutes,
-                                navController = navController,
-                                refreshKey = refreshKey,
-                                onRouteLongClick = { route ->
-                                    selectedRoute = route
-                                    showRouteMenu = true
-                                }
-                            )
-                    } else {
-                        //SecondHallListScreen()
-                    }
+                    //TODO: Listenansicht
                 }
             }
 
@@ -239,7 +212,7 @@ fun RouteScreen(
                 ModalBottomSheet(
                     onDismissRequest = {
                         if (hasUnsavedData) {
-                            showCancelDialog = true
+                            dialogState = DialogState.ShowCancelDialog
                         } else {
                             scope.launch {
                                 sheetState.hide()
@@ -250,25 +223,25 @@ fun RouteScreen(
                     sheetState = sheetState
                 ) {
                     CreateRouteSheet(
-                        name = name,
-                        onNameChange = { name = it },
-                        hall = hall,
-                        onHallChange = { hall = it },
-                        sector = sector,
-                        sectors = Sector.entries.filter { it.hallSection() == hall },
-                        onSectorChange = { sector = it },
-                        holdColor = holdColor,
-                        onHoldColorChange = { holdColor = it },
-                        difficulty = difficulty,
-                        onDifficultyChange = { difficulty = it },
-                        number = number,
-                        onNumberChange = { number = it },
-                        description = description,
-                        onDescriptionChange = { description = it },
-                        setter = setter,
-                        onSetterChange = { setter = it },
-                        selectedPoint = selectedPoint,
-                        onPointSelected = { selectedPoint = it },
+                        name = formState.name,
+                        onNameChange = { formState = formState.copy(name = it) },
+                        hall = formState.hall,
+                        onHallChange = { formState = formState.copy(hall = it) },
+                        sector = formState.sector,
+                        sectors = Sector.entries.filter { it.hallSection() == formState.hall },
+                        onSectorChange = { formState = formState.copy(sector = it) },
+                        holdColor = formState.holdColor,
+                        onHoldColorChange = { formState = formState.copy(holdColor = it) },
+                        difficulty = formState.difficulty,
+                        onDifficultyChange = { formState = formState.copy(difficulty = it) },
+                        number = formState.number,
+                        onNumberChange = { formState = formState.copy(number = it) },
+                        description = formState.description,
+                        onDescriptionChange = { formState = formState.copy(description = it) },
+                        setter = formState.setter,
+                        onSetterChange = { formState = formState.copy(setter = it) },
+                        selectedPoint = formState.selectedPoint?.toOffset(),
+                        onPointSelected = { formState = formState.copy(selectedPoint = it?.toRelativePosition()) },
                         showMap = showMap,
                         onDismissMap = { showMap = false },
                         onSelectPointClick = { showMap = true },
@@ -277,44 +250,33 @@ fun RouteScreen(
                             scope.launch {
                                 sheetState.hide()
                                 showCreateSheet = false
-
-                                name = ""
-                                description = ""
-                                setter = ""
-                                selectedPoint = null
-                                hall = HallSection.FRONT
-                                sector = null
-                                holdColor = null
-                                difficulty = null
-                                number = 1
-
+                                resetCreateRouteForm()
                                 routeViewModel.clearError()
-
                             }
                         },
                         onCreateClick = {
-                            if (selectedPoint != null && sector != null && holdColor != null && difficulty != null) {
+                            if (formState.selectedPoint != null && formState.sector != null && formState.holdColor != null && formState.difficulty != null) {
                                 routeViewModel.createRoute(
                                     Route(
                                         id = "",
-                                        name = name,
-                                        sector = sector!!,
-                                        holdColor = holdColor!!,
-                                        difficulty = difficulty!!,
-                                        number = number,
-                                        description = description,
-                                        setter = setter,
-                                        x = selectedPoint!!.x,
-                                        y = selectedPoint!!.y
+                                        name = formState.name,
+                                        sector = formState.sector!!,
+                                        holdColor = formState.holdColor!!,
+                                        difficulty = formState.difficulty!!,
+                                        number = formState.number,
+                                        description = formState.description,
+                                        setter = formState.setter,
+                                        x = formState.selectedPoint!!.x,
+                                        y = formState.selectedPoint!!.y
                                     )
                                 )
                             }
                         },
                         isCreateEnabled = isCreateEnabled,
                         errorMessage = errorMessage,
-                        showSuccessDialog = showSuccessDialog,
+                        showSuccessDialog = dialogState == DialogState.ShowCreateSuccess,
                         onDismissSuccessDialog = {
-                            showSuccessDialog = false
+                            dialogState = DialogState.Hidden
                             scope.launch {
                                 sheetState.hide()
                                 showCreateSheet = false
@@ -329,6 +291,7 @@ fun RouteScreen(
                 CancelDialog(
                     onConfirm = {
                         showCancelDialog = false
+                        resetCreateRouteForm()
                         scope.launch {
                             sheetState.hide()
                             showCreateSheet = false
@@ -350,10 +313,57 @@ fun RouteScreen(
                     onEdit = { route ->
 
                     },
-                    onDelete = { route ->
-                        routeViewModel.deleteRoute(route.id)
+                    onDelete = {
+                        showRouteMenu = false
+                        dialogState = DialogState.ShowDeleteConfirm
                     }
                 )
+            }
+
+            when (dialogState) {
+                DialogState.ShowDeleteConfirm -> {
+                    DeleteRouteDialogs(
+                        showConfirmDialog = true,
+                        onConfirmDismiss = { dialogState = DialogState.Hidden },
+                        onDeleteConfirmed = {
+                            selectedRoute?.let { route ->
+                                routeViewModel.deleteRoute(route.id)
+                                dialogState = DialogState.ShowDeleteSuccess
+                                selectedRoute = null
+                            }
+                        },
+                        showSuccessDialog = false,
+                        onSuccessDismiss = {}
+                    )
+                }
+
+                DialogState.ShowDeleteSuccess -> {
+                    DeleteRouteDialogs(
+                        showConfirmDialog = false,
+                        onConfirmDismiss = {},
+                        onDeleteConfirmed = {},
+                        showSuccessDialog = true,
+                        onSuccessDismiss = { dialogState = DialogState.Hidden }
+                    )
+                }
+
+                DialogState.ShowCancelDialog -> {
+                    CancelDialog(
+                        onConfirm = {
+                            dialogState = DialogState.Hidden
+                            scope.launch {
+                                sheetState.hide()
+                                showCreateSheet = false
+                            }
+                        },
+                        onDismiss = {
+                            dialogState = DialogState.Hidden
+                            scope.launch { sheetState.show() }
+                        }
+                    )
+                }
+
+                else -> {} // kein Dialog anzeigen
             }
         }
     }
