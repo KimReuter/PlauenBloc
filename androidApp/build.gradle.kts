@@ -70,4 +70,7 @@ dependencies {
     implementation(libs.firebase.app)
 
     implementation(libs.androidx.runtime.livedata)
+
+    implementation(libs.kotlinx.datetime)
+
 }

@@ -1,8 +1,6 @@
 package com.example.plauenblod.screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddComment
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,23 +20,30 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.plauenblod.component.review.ReviewSheet
 import com.example.plauenblod.component.routes.ColorDot
 import com.example.plauenblod.component.routes.routesList.DifficultyCircle
 import com.example.plauenblod.extension.displayName
 import com.example.plauenblod.extension.toColor
+import com.example.plauenblod.model.routeProperty.Difficulty
+import com.example.plauenblod.viewmodel.RouteReviewViewModel
 import com.example.plauenblod.viewmodel.RouteViewModel
+import kotlinx.datetime.LocalDate
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,10 +52,22 @@ fun RouteDetailScreen(
     routeId: String,
     modifier: Modifier = Modifier,
     routeViewModel: RouteViewModel = koinInject(),
+    routeReviewViewModel: RouteReviewViewModel = koinInject(),
     onBackClick: () -> Unit
 ) {
     val allRoutes by routeViewModel.routes.collectAsState()
     val route = allRoutes.find { it.id == routeId }
+
+    // Review
+    var reviewComment by remember { mutableStateOf("") }
+    var reviewRating by remember { mutableStateOf(0) }
+    var reviewCompleted by remember { mutableStateOf(false) }
+    var reviewDate by remember { mutableStateOf<LocalDate?>(null) }
+    var reviewAttempts by remember { mutableStateOf(1) }
+    var reviewDifficulty by remember { mutableStateOf(Difficulty.values().first()) }
+
+    var showReviewSheet by remember { mutableStateOf(false) }
+    var showDiscardDialog by remember { mutableStateOf(false) }
 
     if (route == null) {
         Text("Route wird geladen...", modifier = modifier.padding(16.dp))
@@ -77,7 +95,7 @@ fun RouteDetailScreen(
                 .padding(innerPadding)
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
-               containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
+                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f)
             )
         ) {
             Column(
@@ -136,7 +154,7 @@ fun RouteDetailScreen(
                         .fillMaxWidth()
                 ) {
                     Button(
-                        onClick = {}
+                        onClick = { showReviewSheet = !showReviewSheet }
                     ) {
                         Icon(
                             imageVector = Icons.Default.AddComment,
@@ -167,6 +185,71 @@ fun RouteDetailScreen(
                         .fillMaxWidth()
                         .padding(top = 16.dp)
                 )
+
+                if (showReviewSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = {
+                            if (
+                                reviewComment.isNotEmpty() ||
+                                reviewRating > 0 ||
+                                reviewDate != null ||
+                                reviewAttempts > 1
+                            ) {
+                                showDiscardDialog = true
+                            } else {
+                                showReviewSheet = false
+                            }
+                        }
+                    ) {
+                        ReviewSheet(
+                            perceivedDifficulty = reviewDifficulty,
+                            onDifficultyChange = { reviewDifficulty = it },
+                            commentText = reviewComment,
+                            onCommentChange = { reviewComment = it },
+                            rating = reviewRating,
+                            onRatingChange = { reviewRating = it },
+                            completed = reviewCompleted,
+                            onCompletedChange = { reviewCompleted = it },
+                            selectedDate = reviewDate,
+                            onDateChange = { reviewDate = it },
+                            attempts = reviewAttempts,
+                            onAttemptsChange = { reviewAttempts = it },
+                            onSubmit = { review ->
+                                showReviewSheet = false
+                            },
+                            routeId = routeId
+                        )
+                    }
+                }
+
+                if (showDiscardDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDiscardDialog = false },
+                        confirmButton = {
+                            Button(onClick = {
+                                showDiscardDialog = false
+                                showReviewSheet = false
+                                // Reset fields
+                                reviewComment = ""
+                                reviewRating = 0
+                                reviewDate = null
+                                reviewAttempts = 1
+                            }) {
+                                Text("Verwerfen")
+                            }
+                        },
+                        dismissButton = {
+                            Button(onClick = {
+                                showDiscardDialog = false
+                                showReviewSheet = true
+                            }) {
+                                Text("Zurück")
+                            }
+                        },
+                        title = { Text("Rezension verwerfen?") },
+                        text = { Text("Deine bisherigen Eingaben gehen verloren. Fortfahren?") }
+                    )
+                }
             }
         }
     }

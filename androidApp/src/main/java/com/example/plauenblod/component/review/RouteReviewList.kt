@@ -11,7 +11,7 @@ fun RouteReviewList(
 ) {
     LazyColumn {
         items (reviews) { review ->
-            ReviewItem(review)
+
         }
     }
 }
