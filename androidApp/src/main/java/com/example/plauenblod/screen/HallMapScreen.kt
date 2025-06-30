@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import com.example.plauenblod.android.R
 import com.example.plauenblod.component.map.BoulderMap
-import com.example.plauenblod.model.HallSection
+import com.example.plauenblod.model.routeProperty.HallSection
 import com.example.plauenblod.model.Route
 
 @Composable

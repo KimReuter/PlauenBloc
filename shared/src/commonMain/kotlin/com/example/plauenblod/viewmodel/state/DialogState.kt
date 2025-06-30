@@ -5,6 +5,7 @@ sealed class DialogState {
     object ShowDeleteConfirm : DialogState()
     object ShowDeleteSuccess : DialogState()
     object ShowCreateSuccess : DialogState()
+    object ShowEditSuccess : DialogState()
     object ShowCancelDialog : DialogState()
     data class Error(val message: String) : DialogState()
 }

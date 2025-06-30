@@ -1,7 +1,7 @@
 package com.example.plauenblod.extension
 
 import androidx.compose.ui.graphics.Color
-import com.example.plauenblod.model.HoldColor
+import com.example.plauenblod.model.routeProperty.HoldColor
 
 fun HoldColor.toColor(): Color = when (this) {
     HoldColor.PINK -> Color(0xFFFFC0CB)

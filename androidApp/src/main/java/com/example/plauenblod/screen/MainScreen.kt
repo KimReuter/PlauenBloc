@@ -20,7 +20,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.plauenblod.component.navigation.TabItem
-import com.example.plauenblod.model.HallSection
+import com.example.plauenblod.model.routeProperty.HallSection
 import kotlinx.serialization.Serializable
 
 @Serializable

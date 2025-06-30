@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    kotlin("plugin.serialization") version "2.1.20"
 }
 
 kotlin {
@@ -29,6 +30,8 @@ kotlin {
                 implementation(libs.firebase.app)
                 implementation(libs.kotlinx.coroutines.core)
                 implementation(libs.koin.core)
+                implementation(libs.kotlinx.serialization.json.v163)
+                implementation(libs.kotlinx.datetime)
             }
         }
         val commonTest by getting {

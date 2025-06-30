@@ -1,10 +1,11 @@
 package com.example.plauenblod.viewmodel.state
 
-import com.example.plauenblod.model.Difficulty
-import com.example.plauenblod.model.HallSection
-import com.example.plauenblod.model.HoldColor
-import com.example.plauenblod.model.RelativePosition
-import com.example.plauenblod.model.Sector
+import com.example.plauenblod.model.routeProperty.Difficulty
+import com.example.plauenblod.model.routeProperty.HallSection
+import com.example.plauenblod.model.routeProperty.HoldColor
+import com.example.plauenblod.model.routeProperty.RelativePosition
+import com.example.plauenblod.model.Route
+import com.example.plauenblod.model.routeProperty.Sector
 
 data class RouteFormState(
     val routeId: String = "",
@@ -19,3 +20,15 @@ data class RouteFormState(
     val setter: String = "",
     val selectedPoint: RelativePosition? = null
 )
+
+fun RouteFormState.hasChangedComparedTo(original: RouteFormState): Boolean {
+    return name != original.name ||
+            hall != original.hall ||
+            sector != original.sector ||
+            holdColor != original.holdColor ||
+            difficulty != original.difficulty ||
+            number != original.number ||
+            description != original.description ||
+            setter != original.setter ||
+            selectedPoint != original.selectedPoint
+}

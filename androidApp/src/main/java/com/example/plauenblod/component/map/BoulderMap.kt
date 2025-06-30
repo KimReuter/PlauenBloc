@@ -26,7 +26,7 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.example.plauenblod.extension.toColor
-import com.example.plauenblod.model.RelativePosition
+import com.example.plauenblod.model.routeProperty.RelativePosition
 import com.example.plauenblod.model.Route
 
 @Composable

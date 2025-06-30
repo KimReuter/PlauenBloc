@@ -4,7 +4,10 @@ import com.example.plauenblod.data.auth.AuthRepository
 import com.example.plauenblod.data.auth.FirebaseAuthRepository
 import com.example.plauenblod.data.route.FireBaseRouteRepository
 import com.example.plauenblod.data.route.RouteRepository
+import com.example.plauenblod.data.routeReview.FireBaseRouteReviewRepository
+import com.example.plauenblod.data.routeReview.RouteReviewRepository
 import com.example.plauenblod.viewmodel.AuthViewModel
+import com.example.plauenblod.viewmodel.RouteReviewViewModel
 import com.example.plauenblod.viewmodel.RouteViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,5 +26,10 @@ val appModule = module {
 
     single<AuthRepository> { FirebaseAuthRepository() }
 
+    single< RouteReviewRepository> { FireBaseRouteReviewRepository() }
+
     single { RouteViewModel(get(), get()) }
+
+    single { RouteReviewViewModel(get(), get()) }
+
 }

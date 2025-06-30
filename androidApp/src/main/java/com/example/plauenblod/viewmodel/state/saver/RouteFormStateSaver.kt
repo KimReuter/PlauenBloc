@@ -3,6 +3,11 @@ package com.example.plauenblod.viewmodel.state.saver
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.mapSaver
 import com.example.plauenblod.model.*
+import com.example.plauenblod.model.routeProperty.Difficulty
+import com.example.plauenblod.model.routeProperty.HallSection
+import com.example.plauenblod.model.routeProperty.HoldColor
+import com.example.plauenblod.model.routeProperty.RelativePosition
+import com.example.plauenblod.model.routeProperty.Sector
 import com.example.plauenblod.viewmodel.state.RouteFormState
 
 object RouteFormStateSaver {
@@ -38,3 +43,4 @@ object RouteFormStateSaver {
         }
     )
 }
+

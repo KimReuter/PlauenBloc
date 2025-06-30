@@ -1,9 +1,10 @@
 package com.example.plauenblod.data.route
 
-import com.example.plauenblod.model.Difficulty
-import com.example.plauenblod.model.HoldColor
+import com.example.plauenblod.model.routeProperty.Difficulty
+import com.example.plauenblod.model.routeProperty.HallSection
+import com.example.plauenblod.model.routeProperty.HoldColor
 import com.example.plauenblod.model.Route
-import com.example.plauenblod.model.Sector
+import com.example.plauenblod.model.routeProperty.Sector
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.firestore
 
@@ -13,6 +14,7 @@ class FireBaseRouteRepository: RouteRepository {
         return try {
             val routeMap = mapOf(
                 "name" to route.name,
+                "hall" to route.hall.name,
                 "sector" to route.sector.name,
                 "holdColor" to route.holdColor.name,
                 "difficulty" to route.difficulty.name,
@@ -35,9 +37,11 @@ class FireBaseRouteRepository: RouteRepository {
 
     override suspend fun editRoute(routeId: String, updatedRoute: Route): Result<Unit> {
         return try {
+            println("✏️ editRoute: Versuche Route $routeId zu aktualisieren.")
             val routeMap = mapOf(
                 "name" to updatedRoute.name,
-                "sector" to updatedRoute.sector,
+                "hall" to updatedRoute.hall.name,
+                "sector" to updatedRoute.sector.name,
                 "holdColor" to updatedRoute.holdColor.name,
                 "difficulty" to updatedRoute.difficulty.name,
                 "number" to updatedRoute.number,
@@ -46,9 +50,13 @@ class FireBaseRouteRepository: RouteRepository {
                 "x" to updatedRoute.x,
                 "y" to updatedRoute.y
             )
-            Firebase.firestore.collection("routes").document(routeId).set(routeMap)
+            Firebase.firestore.collection("routes")
+                .document(routeId)
+                .set(routeMap)
+            println("✅ Route $routeId erfolgreich aktualisiert.")
             Result.success(Unit)
         } catch (e: Exception) {
+            println("❌ Fehler beim Aktualisieren: ${e.message}")
             Result.failure(e)
         }
     }
@@ -72,6 +80,7 @@ class FireBaseRouteRepository: RouteRepository {
                     Route(
                         id = doc.id,
                         name = doc.get("name") as? String ?: return@mapNotNull null,
+                        hall = (doc.get("hall") as? String)?.let { HallSection.valueOf(it)} ?: return@mapNotNull null,
                         sector = (doc.get("sector") as? String)?.let { Sector.valueOf(it)} ?: return@mapNotNull null,
                         holdColor = (doc.get("holdColor") as? String)?.let { HoldColor.valueOf(it) } ?: return@mapNotNull null,
                         difficulty = (doc.get("difficulty") as? String)?.let { Difficulty.valueOf(it) } ?: return@mapNotNull null,

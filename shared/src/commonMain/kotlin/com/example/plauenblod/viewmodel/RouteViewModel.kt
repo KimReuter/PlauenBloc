@@ -35,7 +35,6 @@ class RouteViewModel(
                 println("⚠️ RouteViewModel → createRoute(): Validierung fehlgeschlagen (Name/Beschreibung/Setter leer)")
                 return@launch
             }
-
             val result = repo.createRoute(route)
             _routeCreated.value = result
             if (result.isFailure) {
@@ -52,6 +51,10 @@ class RouteViewModel(
 
     fun clearRouteCreatedStatus() {
         _routeCreated.value = null
+    }
+
+    fun clearRouteEditedStatus() {
+        _routeEdited.value = null
     }
 
     fun clearError() {
@@ -81,20 +84,30 @@ class RouteViewModel(
     }
 
     fun editRoute(userRole: UserRole, routeId: String, route: Route) {
+        println("✏️ Bearbeiten gestartet für Route $routeId")
+
         scope.launch {
             if (userRole != UserRole.OPERATOR) {
                 _errorMessage.value = "Nur Betreiber dürfen Routen ändern."
                 return@launch
             }
-            runCatching {
-                repo.editRoute(routeId, route)
-            }.onSuccess { result ->
+
+            try {
+                val result = repo.editRoute(routeId, route) // gibt Result<Unit> zurück
                 _routeEdited.value = result
-                if (result.isFailure) {
-                    _errorMessage.value = result.exceptionOrNull()?.message ?: "Bearbeiten fehlgeschlagen."
+
+                if (result.isSuccess) {
+                    println("✅ RouteViewModel → editRoute(): Erfolgreich bearbeitet!")
+                    _errorMessage.value = null
+                    loadRoutes()
+                } else {
+                    val error = result.exceptionOrNull()?.message ?: "Bearbeiten fehlgeschlagen."
+                    _errorMessage.value = error
+                    println("❌ RouteViewModel → editRoute(): Fehler: $error")
                 }
-            }.onFailure { e ->
+            } catch (e: Exception) {
                 _errorMessage.value = e.message ?: "Unbekannter Fehler beim Bearbeiten."
+                println("❌ RouteViewModel → editRoute(): Exception: ${e.message}")
             }
         }
     }
