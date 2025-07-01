@@ -17,6 +17,7 @@ kotlinxSerializationJson = "1.6.3"
 lottieCompose = "6.0.0"
 navigationCompose = "2.9.0"
 compose-runtime = "1.6.4"
+coilCompose = "3.0.0-rc02"
 
 [libraries]
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended" }
@@ -48,6 +49,8 @@ kotlinx-serialization-json-v163 = { module = "org.jetbrains.kotlinx:kotlinx-seri
 lottie-compose = { module = "com.airbnb.android:lottie-compose", version.ref = "lottieCompose" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.8.0" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetimeVersion" }
+coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coilCompose" }
+coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coilCompose" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

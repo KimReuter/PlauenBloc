@@ -7,8 +7,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class RouteReview (
+    val id: String = "",
     val routeId: String = "",
     val userId: String = "",
+    val userName: String = "",
+    val userProfileImageUrl: String? = "",
     val stars: Int = 0,
     val comment: String = "",
     val completed: Boolean = false,

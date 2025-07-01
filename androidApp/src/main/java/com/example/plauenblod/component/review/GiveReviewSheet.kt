@@ -28,11 +28,13 @@ import androidx.compose.ui.unit.dp
 import com.example.plauenblod.component.routes.createRoute.DropdownSelector
 import com.example.plauenblod.model.RouteReview
 import com.example.plauenblod.model.routeProperty.Difficulty
+import com.example.plauenblod.viewmodel.AuthViewModel
 import kotlinx.datetime.LocalDate
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReviewSheet(
+fun GiveReviewSheet(
     routeId: String,
     perceivedDifficulty: Difficulty,
     onDifficultyChange: (Difficulty) -> Unit,

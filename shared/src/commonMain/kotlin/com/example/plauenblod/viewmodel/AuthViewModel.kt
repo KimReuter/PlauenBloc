@@ -20,6 +20,16 @@ class AuthViewModel(
     private val _userRole = MutableStateFlow<UserRole?>(null)
     val userRole: StateFlow<UserRole?> = _userRole
 
+    private val _userId = MutableStateFlow<String?>(null)
+    val userId: StateFlow<String?> = _userId
+
+    private val _userName = MutableStateFlow<String?>(null)
+    val userName: StateFlow<String?> = _userName
+
+    private val _userProfileImageUrl = MutableStateFlow<String?>(null)
+    val userProfileImageUrl: StateFlow<String?> = _userProfileImageUrl
+
+
     fun signIn(email: String, password: String, onResult: (AuthResult) -> Unit) {
         coroutineScope.launch {
             val result = authRepository.signIn(email, password)
@@ -53,10 +63,15 @@ class AuthViewModel(
         if (isValidPassword(password)) {
             coroutineScope.launch {
                 val result = authRepository.signUp(userName, email, password)
+                if (result is AuthResult.Success) {
+                    val user = Firebase.auth.currentUser
+                    user?.updateProfile(displayName = userName)
+                    _userName.value = userName
+                    _userId.value = user?.uid
+                }
                 onResult(result)
             }
         }
-
     }
 
     fun isValidPassword(password: String): Boolean {
@@ -71,4 +86,11 @@ class AuthViewModel(
     fun signOut() {
         authRepository.signOut()
     }
+
+    init {
+        val user = Firebase.auth.currentUser
+        _userId.value = user?.uid
+        _userName.value = user?.displayName
+    }
+
 }
