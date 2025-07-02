@@ -44,6 +44,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,13 +65,16 @@ import com.example.plauenblod.component.routes.ColorDot
 import com.example.plauenblod.component.routes.routesList.DifficultyCircle
 import com.example.plauenblod.extension.displayName
 import com.example.plauenblod.extension.toColor
+import com.example.plauenblod.model.RouteReview
 import com.example.plauenblod.model.routeProperty.Difficulty
 import com.example.plauenblod.viewmodel.AuthViewModel
 import com.example.plauenblod.viewmodel.RouteReviewViewModel
 import com.example.plauenblod.viewmodel.RouteViewModel
+import com.example.plauenblod.viewmodel.state.DialogState
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.koin.compose.koinInject
@@ -90,15 +94,15 @@ fun RouteDetailScreen(
 
     // Review
     var reviewComment by remember { mutableStateOf("") }
-    var reviewRating by remember { mutableStateOf(0) }
+    var reviewRating by remember { mutableStateOf(1) }
     var reviewCompleted by remember { mutableStateOf(false) }
     var reviewDate by remember { mutableStateOf<LocalDate?>(null) }
     var reviewAttempts by remember { mutableStateOf(1) }
-    var reviewDifficulty by remember { mutableStateOf(Difficulty.values().first()) }
+    var reviewDifficulty by remember { mutableStateOf(route?.difficulty ?: Difficulty.values().first()) }
 
     // Review geben
     var showReviewSheet by remember { mutableStateOf(false) }
-    var showDiscardDialog by remember { mutableStateOf(false) }
+    var dialogState by remember { mutableStateOf<DialogState>(DialogState.Hidden) }
     var reOpenSheet by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -106,20 +110,35 @@ fun RouteDetailScreen(
     val currentUserId = authViewModel.userId.collectAsState().value ?: ""
     val currentUserName = authViewModel.userName.collectAsState().value ?: "Anonymer Nutzer"
     val currentUserProfileImageUrl = authViewModel.userProfileImageUrl.collectAsState().value
+    val isValid = reviewComment.isNotBlank() ||
+            reviewRating > 0 ||
+            reviewCompleted ||
+            reviewAttempts > 1
 
     // Review anzeigen
     val reviews by routeReviewViewModel.reviews.collectAsState()
     var reviewsExpanded by remember { mutableStateOf(false) }
     val listState = rememberLazyListState()
 
+    // Review bearbeiten
+    var reviewBeingEdited by remember { mutableStateOf<RouteReview?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
     val isDirty = reviewComment.isNotEmpty() ||
             reviewRating > 0 ||
             reviewDate != null ||
-            reviewAttempts > 1
+            reviewAttempts > 1 ||
+            reviewCompleted != false
 
     if (route == null) {
         Text("Route wird geladen...", modifier = modifier.padding(16.dp))
         return
+    }
+
+    LaunchedEffect(route) {
+        route?.let {
+            reviewDifficulty = it.difficulty
+        }
     }
 
     LaunchedEffect(reOpenSheet) {
@@ -132,6 +151,22 @@ fun RouteDetailScreen(
     LaunchedEffect(routeId) {
         if (currentUserId != null) {
             routeReviewViewModel.loadReviews(routeId, currentUserId)
+        }
+    }
+
+    LaunchedEffect(sheetState.currentValue) {
+        if (sheetState.isVisible.not()) {
+            delay(100)
+            if (isDirty) {
+                dialogState = DialogState.ShowCancelDialog
+            } else {
+                reviewComment = ""
+                reviewRating = 0
+                reviewDate = null
+                reviewAttempts = 1
+                reviewDifficulty = Difficulty.values().first()
+                showReviewSheet = false
+            }
         }
     }
 
@@ -371,17 +406,20 @@ fun RouteDetailScreen(
                                     MaterialTheme.colorScheme.surfaceVariant,
                                 currentUserId = currentUserId,
                                 onEdit = { review ->
+                                    reviewBeingEdited = review
+                                    reviewComment = review.comment
+                                    reviewRating = review.stars
+                                    reviewCompleted = review.completed
+                                    reviewDate = review.completionDate?.let { LocalDate.parse(it) }
+                                    reviewAttempts = review.attempts
+                                    reviewDifficulty =
+                                        review.perceivedDifficulty ?: Difficulty.values().first()
+                                    showReviewSheet = true
 
                                 },
                                 onDelete = { review ->
-                                    routeReviewViewModel.deleteReview(routeId, review.id) { success ->
-                                        if (success) {
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar("Review wurde gelöscht")
-                                            }
-                                            routeReviewViewModel.loadReviews(routeId, currentUserId)
-                                        }
-                                    }
+                                    reviewBeingEdited = review
+                                    dialogState = DialogState.ShowDeleteConfirm
                                 }
                             )
                         }
@@ -391,13 +429,8 @@ fun RouteDetailScreen(
                 item {
                     if (showReviewSheet) {
                         ModalBottomSheet(
-                            onDismissRequest = {
-                                if (isDirty) {
-                                    showDiscardDialog = true
-                                } else {
-                                    showReviewSheet = false
-                                }
-                            }
+                            sheetState = sheetState,
+                            onDismissRequest = { }
                         ) {
                             GiveReviewSheet(
                                 perceivedDifficulty = reviewDifficulty,
@@ -416,59 +449,147 @@ fun RouteDetailScreen(
                                     val reviewWithUserId = review.copy(
                                         userId = currentUserId.ifBlank { "anonymous" },
                                         userName = currentUserName,
-                                        userProfileImageUrl = currentUserProfileImageUrl
+                                        userProfileImageUrl = currentUserProfileImageUrl,
+                                        id = reviewBeingEdited?.id ?: ""
                                     )
-                                    routeReviewViewModel.addReview(
-                                        routeId,
-                                        reviewWithUserId
-                                    ) { success ->
-                                        if (success) {
-                                            routeReviewViewModel.loadReviews(
-                                                routeId,
-                                                currentUserId ?: ""
-                                            )
-                                            coroutineScope.launch {
-                                                snackbarHostState.showSnackbar("Danke für deine Rezension! 🎉")
+                                    if (reviewBeingEdited == null) {
+                                        routeReviewViewModel.addReview(
+                                            routeId,
+                                            reviewWithUserId
+                                        ) { success ->
+                                            if (success) {
+                                                routeReviewViewModel.loadReviews(
+                                                    routeId,
+                                                    currentUserId ?: ""
+                                                )
+                                                coroutineScope.launch {
+                                                    snackbarHostState.showSnackbar("Danke für deine Rezension! 🎉")
+                                                }
+                                                showReviewSheet = false
+                                            } else {
+                                                // Fehlerhandling
                                             }
-                                            showReviewSheet = false
-                                        } else {
-                                            // Fehlerhandling
+                                        }
+                                    } else {
+                                        routeReviewViewModel.updateReview(
+                                            routeId,
+                                            reviewWithUserId
+                                        ) { success ->
+                                            if (success) {
+                                                routeReviewViewModel.loadReviews(
+                                                    routeId,
+                                                    currentUserId ?: ""
+                                                )
+                                                coroutineScope.launch {
+                                                    snackbarHostState.showSnackbar("Danke für deine Rezension! 🎉")
+                                                }
+                                                showReviewSheet = false
+                                            } else {
+                                                // Fehlerhandling
+                                            }
                                         }
                                     }
+                                    showReviewSheet = false
+                                    reviewBeingEdited = null
                                 },
-                                routeId = routeId
+                                routeId = routeId,
+                                enabled = isValid
                             )
                         }
                     }
                 }
 
                 item {
-                    if (showDiscardDialog) {
+                    if (dialogState == DialogState.ShowCancelDialog) {
                         AlertDialog(
-                            onDismissRequest = { showDiscardDialog = false },
+                            onDismissRequest = { dialogState = DialogState.Hidden },
+                            title = { Text("Bearbeitung verwerfen?") },
+                            text = { Text("Deine Eingaben gehen verloren.") },
                             confirmButton = {
-                                Button(onClick = {
-                                    showDiscardDialog = false
-                                    showReviewSheet = false
-                                    // Reset fields
-                                    reviewComment = ""
-                                    reviewRating = 0
-                                    reviewDate = null
-                                    reviewAttempts = 1
-                                }) {
-                                    Text("Verwerfen")
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            dialogState = DialogState.Hidden
+                                            coroutineScope.launch {
+                                                sheetState.hide()
+                                            }
+                                            showReviewSheet = false
+                                            reviewComment = ""
+                                            reviewRating = 0
+                                            reviewDate = null
+                                            reviewAttempts = 1
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Verwerfen")
+                                    }
+                                    Button(
+                                        onClick = {
+                                            dialogState = DialogState.Hidden
+                                            coroutineScope.launch {
+                                                sheetState.show()
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Zurück")
+                                    }
                                 }
-                            },
-                            dismissButton = {
-                                Button(onClick = {
-                                    showDiscardDialog = false
-                                    reOpenSheet = true
-                                }) {
-                                    Text("Zurück")
+                            }
+                        )
+                    }
+                }
+
+                item {
+                    if (dialogState == DialogState.ShowDeleteConfirm) {
+                        AlertDialog(
+                            onDismissRequest = { dialogState = DialogState.Hidden },
+                            title = { Text("Rezension wirklich löschen?") },
+                            text = { Text("Diese Rezension wird dauerhaft entfernt.") },
+                            confirmButton = {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 8.dp, vertical = 16.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            dialogState = DialogState.Hidden
+                                            reviewBeingEdited?.let { review ->
+                                                routeReviewViewModel.deleteReview(routeId, review.id) { success ->
+                                                    if (success) {
+                                                        coroutineScope.launch {
+                                                            snackbarHostState.showSnackbar("Rezension wurde gelöscht")
+                                                        }
+                                                        routeReviewViewModel.loadReviews(routeId, currentUserId)
+                                                        reviewBeingEdited = null
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Löschen")
+                                    }
+                                    Button(
+                                        onClick = {
+                                            dialogState = DialogState.Hidden
+                                            coroutineScope.launch {
+                                                sheetState.show()
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text("Abbrechen")
+                                    }
                                 }
-                            },
-                            title = { Text("Rezension verwerfen?") },
-                            text = { Text("Deine bisherigen Eingaben gehen verloren. Fortfahren?") }
+                            }
                         )
                     }
                 }

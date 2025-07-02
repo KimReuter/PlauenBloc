@@ -49,7 +49,8 @@ fun GiveReviewSheet(
     attempts: Int,
     onAttemptsChange: (Int) -> Unit,
     onSubmit: (RouteReview) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean
 ) {
     val scrollState = rememberScrollState()
 
@@ -156,6 +157,7 @@ fun GiveReviewSheet(
                 )
                 onSubmit(review)
             },
+            enabled = enabled,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)

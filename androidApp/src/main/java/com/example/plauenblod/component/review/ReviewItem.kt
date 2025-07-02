@@ -1,9 +1,11 @@
 package com.example.plauenblod.component.review
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +21,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,6 +52,8 @@ fun ReviewItem(
     onEdit: (RouteReview) -> Unit,
     onDelete: (RouteReview) -> Unit
     ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -94,29 +99,43 @@ fun ReviewItem(
         }
 
         if (review.userId == currentUserId) {
-            var expanded by remember { mutableStateOf(false) }
             Box {
                 IconButton(onClick = { expanded = true }) {
                     Icon(Icons.Default.MoreVert, contentDescription = "Mehr Optionen")
                 }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Bearbeiten") },
-                        onClick = {
-                            expanded = false
-                            onEdit(review)
+                if (expanded) {
+                    Surface(
+                        tonalElevation = 4.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.width(IntrinsicSize.Min)
+                    ) {
+                        Column {
+                            Text(
+                                text = "Bearbeiten",
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        expanded = false
+                                        onEdit(review)
+                                    }
+                                    .padding(12.dp)
+                                )
+                            Text(
+                                text = "Löschen",
+                                color = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        expanded = false
+                                        onDelete(review)
+                                    }
+                                    .padding(12.dp)
+                            )
                         }
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Löschen") },
-                        onClick = {
-                            expanded = false
-                            onDelete(review)
-                        }
-                    )
+
+                    }
                 }
             }
         }
