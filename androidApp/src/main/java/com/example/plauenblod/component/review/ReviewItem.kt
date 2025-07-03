@@ -42,6 +42,8 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 
 @OptIn(kotlin.time.ExperimentalTime::class)
 @Composable
@@ -52,18 +54,24 @@ fun ReviewItem(
     onEdit: (RouteReview) -> Unit,
     onDelete: (RouteReview) -> Unit
     ) {
-    var expanded by remember { mutableStateOf(false) }
+    var menuExpanded by remember { mutableStateOf(false) }
+    var textExpanded by remember { mutableStateOf(false) }
+    val isLongText = review.comment.length > 150
 
-    Row(
+    ConstraintLayout(
         modifier = Modifier
             .fillMaxWidth()
             .background(backgroundColor)
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .padding(8.dp)
     ) {
+        val (profile, textBlock, menu) = createRefs()
+
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top,
+            modifier = Modifier.constrainAs(profile) {
+                top.linkTo(parent.top)
+                start.linkTo(parent.start)
+            }
         ) {
             AsyncImage(
                 model = review.userProfileImageUrl,
@@ -89,52 +97,72 @@ fun ReviewItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Spacer(Modifier.height(4.dp))
+            }
+        }
+
+        Column(
+            modifier = Modifier.constrainAs(textBlock) {
+                top.linkTo(profile.bottom, margin = 8.dp)
+                start.linkTo(parent.start)
+                end.linkTo(menu.start)
+                width = Dimension.fillToConstraints
+            }
+        ) {
+            Text(
+                text = review.comment,
+                style = MaterialTheme.typography.bodyMedium,
+                maxLines = if (textExpanded) Int.MAX_VALUE else 3
+            )
+            if (isLongText) {
                 Text(
-                    text = review.comment,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 4
+                    text = if (textExpanded) "Weniger anzeigen" else "Mehr anzeigen",
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelSmall,
+                    modifier = Modifier
+                        .clickable { textExpanded = !textExpanded }
+                        .padding(top = 4.dp)
                 )
             }
         }
 
         if (review.userId == currentUserId) {
-            Box {
-                IconButton(onClick = { expanded = true }) {
+            Box(
+                modifier = Modifier.constrainAs(menu) {
+                    top.linkTo(parent.top)
+                    end.linkTo(parent.end)
+                }
+            ) {
+                IconButton(onClick = { menuExpanded = true }) {
                     Icon(Icons.Default.MoreVert, contentDescription = "Mehr Optionen")
                 }
-                if (expanded) {
+                if (menuExpanded) {
                     Surface(
                         tonalElevation = 4.dp,
                         color = MaterialTheme.colorScheme.primary,
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.width(IntrinsicSize.Min)
+                        shape = MaterialTheme.shapes.medium
                     ) {
                         Column {
                             Text(
                                 text = "Bearbeiten",
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = MaterialTheme.colorScheme.surface,
                                 modifier = Modifier
-                                    .fillMaxWidth()
                                     .clickable {
-                                        expanded = false
+                                        menuExpanded = false
                                         onEdit(review)
                                     }
                                     .padding(12.dp)
-                                )
+                            )
                             Text(
                                 text = "Löschen",
-                                color = MaterialTheme.colorScheme.onSurface,
+                                color = MaterialTheme.colorScheme.surface,
                                 modifier = Modifier
-                                    .fillMaxWidth()
                                     .clickable {
-                                        expanded = false
+                                        menuExpanded = false
                                         onDelete(review)
                                     }
                                     .padding(12.dp)
                             )
                         }
-
                     }
                 }
             }

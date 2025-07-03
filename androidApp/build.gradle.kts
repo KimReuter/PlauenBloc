@@ -69,13 +69,15 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.app)
 
+    // Datum
     implementation(libs.androidx.runtime.livedata)
-
     implementation(libs.kotlinx.datetime)
 
     // Async Image
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
 
+    // Constraint Layout
+    implementation(libs.androidx.constraintlayout.compose)
 
 }

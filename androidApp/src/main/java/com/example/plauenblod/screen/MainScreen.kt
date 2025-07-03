@@ -1,9 +1,12 @@
 package com.example.plauenblod.screen
 
+import android.R
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,11 +67,16 @@ fun AppStart() {
                         icon = {
                             Icon(
                                 imageVector = tabItem.tabIcon,
-                                contentDescription = "TabItem"
+                                contentDescription = "TabItem",
+                                tint = if (selectedTab == tabItem) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                             )
-                        }
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent,
+                            selectedIconColor = MaterialTheme.colorScheme.primary,
+                            unselectedIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
                     )
-
                 }
             }
         }
