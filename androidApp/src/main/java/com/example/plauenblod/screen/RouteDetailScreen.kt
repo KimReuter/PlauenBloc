@@ -48,11 +48,12 @@ import com.example.plauenblod.component.review.ReviewsHeader
 import com.example.plauenblod.component.review.RouteActionButtons
 import com.example.plauenblod.component.review.RouteDetailHeader
 import com.example.plauenblod.component.review.RouteInformationSection
-import com.example.plauenblod.model.RouteReview
-import com.example.plauenblod.model.routeProperty.Difficulty
-import com.example.plauenblod.viewmodel.AuthViewModel
-import com.example.plauenblod.viewmodel.RouteReviewViewModel
-import com.example.plauenblod.viewmodel.RouteViewModel
+import com.example.plauenblod.feature.routeReview.model.RouteReview
+import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.routeReview.viewmodel.RouteReviewViewModel
+import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
+import com.example.plauenblod.feature.user.viewmodel.UserViewModel
 import com.example.plauenblod.viewmodel.state.DialogState
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -66,6 +67,7 @@ fun RouteDetailScreen(
     routeViewModel: RouteViewModel = koinInject(),
     routeReviewViewModel: RouteReviewViewModel = koinInject(),
     authViewModel: AuthViewModel = koinInject(),
+    userViewModel: UserViewModel = koinInject(),
     onBackClick: () -> Unit
 ) {
     // Routen
@@ -79,8 +81,8 @@ fun RouteDetailScreen(
 
     // Aktueller User
     val currentUserId = authViewModel.userId.collectAsState().value ?: ""
-    val currentUserName = authViewModel.userName.collectAsState().value ?: "Anonymer Nutzer"
-    val currentUserProfileImageUrl = authViewModel.userProfileImageUrl.collectAsState().value
+    val currentUserName = userViewModel.userName.collectAsState().value ?: "Anonymer Nutzer"
+    val currentUserProfileImageUrl = userViewModel.userProfileImageUrl.collectAsState().value
 
     // Review Formular
     var reviewComment by remember { mutableStateOf("") }
@@ -298,6 +300,7 @@ fun RouteDetailScreen(
                     attempts = reviewAttempts,
                     onAttemptsChange = { reviewAttempts = it },
                     onSubmit = { review ->
+                        println("✅ onSubmit triggered")
                         val reviewWithUserId = review.copy(
                             userId = currentUserId.ifBlank { "anonymous" },
                             userName = currentUserName,
@@ -307,6 +310,21 @@ fun RouteDetailScreen(
                         if (reviewBeingEdited == null) {
                             routeReviewViewModel.addReview(routeId, reviewWithUserId) { success ->
                                 if (success) {
+                                    if (review.completed) {
+                                        userViewModel.tickRoute(
+                                            userId = currentUserId,
+                                            route = route,
+                                            attempts = review.attempts,
+                                            isFlash = (review.attempts == 1)
+                                        ) { success ->
+                                            if (success) {
+                                                println("✅ Tick erfolgreich beim User gespeichert")
+                                                userViewModel.loadUser(currentUserId)
+                                            } else {
+                                                println("❌ Fehler beim Tick speichern")
+                                            }
+                                        }
+                                    }
                                     scope.launch {
                                         snackbarHostState.showSnackbar("Danke für deine Rezension! 🎉")
                                     }

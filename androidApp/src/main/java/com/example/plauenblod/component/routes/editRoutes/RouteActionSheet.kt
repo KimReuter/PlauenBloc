@@ -5,8 +5,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.plauenblod.model.Route
-import com.example.plauenblod.model.UserRole
+import com.example.plauenblod.feature.route.model.Route
+import com.example.plauenblod.feature.auth.UserRole
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

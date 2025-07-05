@@ -8,7 +8,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.plauenblod.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import org.koin.compose.koinInject
 
 @Composable

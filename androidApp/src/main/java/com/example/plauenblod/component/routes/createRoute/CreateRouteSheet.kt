@@ -6,10 +6,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import com.example.plauenblod.model.routeProperty.Difficulty
-import com.example.plauenblod.model.routeProperty.HallSection
-import com.example.plauenblod.model.routeProperty.HoldColor
-import com.example.plauenblod.model.routeProperty.Sector
+import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.route.model.routeProperty.HallSection
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
+import com.example.plauenblod.feature.route.model.routeProperty.Sector
 import com.example.plauenblod.viewmodel.state.DialogState
 
 @Composable

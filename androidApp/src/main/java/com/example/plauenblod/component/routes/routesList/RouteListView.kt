@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.plauenblod.extension.displayName
-import com.example.plauenblod.model.Route
-import com.example.plauenblod.model.routeProperty.Sector
+import com.example.plauenblod.feature.route.model.Route
+import com.example.plauenblod.feature.route.model.routeProperty.Sector
 
 @Composable
 fun RouteListView(

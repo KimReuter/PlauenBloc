@@ -4,7 +4,7 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import com.example.plauenblod.model.RouteReview
+import com.example.plauenblod.feature.routeReview.model.RouteReview
 
 fun LazyListScope.ReviewListSection(
     reviewsExpanded: Boolean,

@@ -34,10 +34,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.example.plauenblod.android.R
-import com.example.plauenblod.model.RouteReview
+import com.example.plauenblod.feature.routeReview.model.RouteReview
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
@@ -56,7 +57,7 @@ fun ReviewItem(
     ) {
     var menuExpanded by remember { mutableStateOf(false) }
     var textExpanded by remember { mutableStateOf(false) }
-    val isLongText = review.comment.length > 150
+    val isLongText = review.comment.length > 90
 
     ConstraintLayout(
         modifier = Modifier
@@ -104,15 +105,17 @@ fun ReviewItem(
             modifier = Modifier.constrainAs(textBlock) {
                 top.linkTo(profile.bottom, margin = 8.dp)
                 start.linkTo(parent.start)
-                end.linkTo(menu.start)
+                end.linkTo(parent.end)
                 width = Dimension.fillToConstraints
             }
         ) {
             Text(
                 text = review.comment,
                 style = MaterialTheme.typography.bodyMedium,
-                maxLines = if (textExpanded) Int.MAX_VALUE else 3
+                maxLines = if (textExpanded) Int.MAX_VALUE else 2,
+                overflow = TextOverflow.Ellipsis
             )
+            Spacer(modifier = Modifier.height(8.dp))
             if (isLongText) {
                 Text(
                     text = if (textExpanded) "Weniger anzeigen" else "Mehr anzeigen",
@@ -135,35 +138,24 @@ fun ReviewItem(
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(Icons.Default.MoreVert, contentDescription = "Mehr Optionen")
                 }
-                if (menuExpanded) {
-                    Surface(
-                        tonalElevation = 4.dp,
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Column {
-                            Text(
-                                text = "Bearbeiten",
-                                color = MaterialTheme.colorScheme.surface,
-                                modifier = Modifier
-                                    .clickable {
-                                        menuExpanded = false
-                                        onEdit(review)
-                                    }
-                                    .padding(12.dp)
-                            )
-                            Text(
-                                text = "Löschen",
-                                color = MaterialTheme.colorScheme.surface,
-                                modifier = Modifier
-                                    .clickable {
-                                        menuExpanded = false
-                                        onDelete(review)
-                                    }
-                                    .padding(12.dp)
-                            )
+                DropdownMenu(
+                    expanded = menuExpanded,
+                    onDismissRequest = { menuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Bearbeiten") },
+                        onClick = {
+                            menuExpanded = false
+                            onEdit(review)
                         }
-                    }
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Löschen") },
+                        onClick = {
+                            menuExpanded = false
+                            onDelete(review)
+                        }
+                    )
                 }
             }
         }

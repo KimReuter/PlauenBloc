@@ -8,7 +8,7 @@ import androidx.compose.runtime.getValue
 import com.example.plauenblod.screen.AuthScreen
 import com.example.plauenblod.screen.AppStart
 import com.example.plauenblod.screen.SplashScreen
-import com.example.plauenblod.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import org.koin.compose.koinInject
 
 @Composable

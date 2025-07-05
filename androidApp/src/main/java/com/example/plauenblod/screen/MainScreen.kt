@@ -1,6 +1,5 @@
 package com.example.plauenblod.screen
 
-import android.R
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -8,7 +7,6 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,26 +21,25 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.example.plauenblod.component.navigation.TabItem
-import com.example.plauenblod.model.routeProperty.HallSection
 import kotlinx.serialization.Serializable
 
 @Serializable
-object HomeRoute
+object AuthRoute
 
 @Serializable
-object MapRoute
+object DashboardRoute
 
 @Serializable
-object ListRoute
+object BoulderRoute
+
+@Serializable
+object CollectionRoute
 
 @Serializable
 object CommunityRoute
 
 @Serializable
-object SettingsRoute
-
-@Serializable
-object AuthRoute
+object UserRoute
 
 @Serializable
 data class BoulderDetailRoute(
@@ -50,7 +47,8 @@ data class BoulderDetailRoute(
 )
 
 @Composable
-fun AppStart() {
+fun AppStart(
+) {
     val navController = rememberNavController()
     var selectedTab by rememberSaveable { mutableStateOf(TabItem.HOME) }
 
@@ -87,28 +85,28 @@ fun AppStart() {
             startDestination = selectedTab.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable<HomeRoute> {
+            composable<AuthRoute> {
+                AuthScreen(onLoginSuccess = { navController.navigate(DashboardRoute) })
+            }
+
+            composable<DashboardRoute> {
                 HomeScreen()
             }
 
-            composable<AuthRoute> {
-                AuthScreen(onLoginSuccess = { navController.navigate(HomeRoute) })
-            }
-
-            composable<SettingsRoute> {
-                SettingsScreen()
-            }
-
-            composable<MapRoute> {
+            composable<BoulderRoute> {
                 RouteScreen(navController = navController)
             }
 
-            composable<ListRoute> {
+            composable<CollectionRoute> {
                 SettingsScreen()
             }
 
             composable<CommunityRoute> {
                 SettingsScreen()
+            }
+
+            composable<UserRoute> {
+                UserScreen()
             }
 
             composable<BoulderDetailRoute> { backStackEntry ->

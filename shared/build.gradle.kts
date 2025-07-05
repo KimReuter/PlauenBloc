@@ -11,7 +11,7 @@ kotlin {
         compilations.all {
             compileTaskProvider.configure {
                 compilerOptions {
-                    jvmTarget.set(JvmTarget.JVM_1_8)
+                    jvmTarget.set(JvmTarget.JVM_18)
                 }
             }
         }
@@ -42,9 +42,8 @@ kotlin {
 
         val androidMain by getting {
             dependencies {
-                implementation(libs.firebase.firestore)
                 implementation(libs.kotlinx.datetime)
-
+                implementation(libs.google.firebase.auth)
             }
         }
 

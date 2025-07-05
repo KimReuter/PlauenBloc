@@ -1,16 +1,12 @@
 package com.example.plauenblod.screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -22,19 +18,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.example.plauenblod.android.R
 import com.example.plauenblod.component.authentication.AnimatedLogo
-import com.example.plauenblod.component.authentication.AuthBackground
 import com.example.plauenblod.component.authentication.ResetPasswordDialog
 import com.example.plauenblod.component.authentication.SignInSection
 import com.example.plauenblod.component.authentication.SignUpSection
-import com.example.plauenblod.data.auth.AuthResult
-import com.example.plauenblod.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.auth.AuthResult
+import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import org.koin.compose.koinInject
 
 @Composable

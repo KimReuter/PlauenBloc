@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,12 +47,12 @@ import com.example.plauenblod.component.routes.routesList.RouteListView
 import com.example.plauenblod.extension.hallSection
 import com.example.plauenblod.extension.toOffset
 import com.example.plauenblod.extension.toRelativePosition
-import com.example.plauenblod.model.Route
-import com.example.plauenblod.model.routeProperty.HallSection
-import com.example.plauenblod.model.routeProperty.RelativePosition
-import com.example.plauenblod.model.routeProperty.Sector
-import com.example.plauenblod.viewmodel.AuthViewModel
-import com.example.plauenblod.viewmodel.RouteViewModel
+import com.example.plauenblod.feature.route.model.Route
+import com.example.plauenblod.feature.route.model.routeProperty.HallSection
+import com.example.plauenblod.feature.route.model.routeProperty.RelativePosition
+import com.example.plauenblod.feature.route.model.routeProperty.Sector
+import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
 import com.example.plauenblod.viewmodel.state.DialogState
 import com.example.plauenblod.viewmodel.state.RouteFormState
 import com.example.plauenblod.viewmodel.state.hasChangedComparedTo
@@ -151,7 +150,7 @@ fun RouteScreen(
             routeViewModel.clearRouteCreatedStatus()
             refreshKey++
             navController.popBackStack()
-            navController.navigate(MapRoute)
+            navController.navigate(BoulderRoute)
             dialogState = DialogState.ShowCreateSuccess
         }
     }
@@ -346,7 +345,8 @@ fun RouteScreen(
                                                 description = formState.description,
                                                 setter = formState.setter,
                                                 x = formState.selectedPoint!!.x,
-                                                y = formState.selectedPoint!!.y
+                                                y = formState.selectedPoint!!.y,
+                                                points = formState.points
                                             )
                                         )
                                     }
@@ -364,7 +364,8 @@ fun RouteScreen(
                                             description = formState.description,
                                             setter = formState.setter,
                                             x = formState.selectedPoint!!.x,
-                                            y = formState.selectedPoint!!.y
+                                            y = formState.selectedPoint!!.y,
+                                            points = formState.points
                                         )
                                     )
                                     dialogState = DialogState.ShowCreateSuccess

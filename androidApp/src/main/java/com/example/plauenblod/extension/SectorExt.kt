@@ -1,7 +1,7 @@
 package com.example.plauenblod.extension
 
-import com.example.plauenblod.model.routeProperty.HallSection
-import com.example.plauenblod.model.routeProperty.Sector
+import com.example.plauenblod.feature.route.model.routeProperty.HallSection
+import com.example.plauenblod.feature.route.model.routeProperty.Sector
 
 fun Sector.hallSection(): HallSection = when (this) {
     Sector.ROCO_DE_LA_FINESTRA -> HallSection.FRONT

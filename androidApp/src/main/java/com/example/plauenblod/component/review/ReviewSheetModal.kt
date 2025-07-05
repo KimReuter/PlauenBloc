@@ -28,8 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.plauenblod.component.routes.createRoute.DropdownSelector
-import com.example.plauenblod.model.RouteReview
-import com.example.plauenblod.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.routeReview.model.RouteReview
+import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
 import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)

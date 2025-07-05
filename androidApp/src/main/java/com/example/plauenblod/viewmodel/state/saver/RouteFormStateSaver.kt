@@ -2,12 +2,11 @@ package com.example.plauenblod.viewmodel.state.saver
 
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.mapSaver
-import com.example.plauenblod.model.*
-import com.example.plauenblod.model.routeProperty.Difficulty
-import com.example.plauenblod.model.routeProperty.HallSection
-import com.example.plauenblod.model.routeProperty.HoldColor
-import com.example.plauenblod.model.routeProperty.RelativePosition
-import com.example.plauenblod.model.routeProperty.Sector
+import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.route.model.routeProperty.HallSection
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
+import com.example.plauenblod.feature.route.model.routeProperty.RelativePosition
+import com.example.plauenblod.feature.route.model.routeProperty.Sector
 import com.example.plauenblod.viewmodel.state.RouteFormState
 
 object RouteFormStateSaver {
@@ -23,7 +22,8 @@ object RouteFormStateSaver {
                 "description" to state.description,
                 "setter" to state.setter,
                 "x" to state.selectedPoint?.x,
-                "y" to state.selectedPoint?.y
+                "y" to state.selectedPoint?.y,
+                "points" to state.points
             )
         },
         restore = { map ->
@@ -38,7 +38,8 @@ object RouteFormStateSaver {
                 setter = map["setter"] as? String ?: "",
                 selectedPoint = (map["x"] as? Float)?.let { x ->
                     (map["y"] as? Float)?.let { y -> RelativePosition(x, y) }
-                }
+                },
+                points = map["points"] as? Int ?: 0
             )
         }
     )

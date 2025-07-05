@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.example.plauenblod.component.routes.ColorDot
 import com.example.plauenblod.extension.displayName
 import com.example.plauenblod.extension.toColor
-import com.example.plauenblod.model.Route
+import com.example.plauenblod.feature.route.model.Route
 
 @Composable
 fun RouteInformationSection(

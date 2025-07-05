@@ -25,7 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.plauenblod.model.UserRole
+import com.example.plauenblod.feature.auth.UserRole
 
 @Composable
 fun MenuButton(

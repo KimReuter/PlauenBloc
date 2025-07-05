@@ -29,11 +29,11 @@ import com.example.plauenblod.component.LabeledButton
 import com.example.plauenblod.component.LabeledTextField
 import com.example.plauenblod.component.map.BoulderMap
 import com.example.plauenblod.extension.toColor
-import com.example.plauenblod.model.routeProperty.Difficulty
-import com.example.plauenblod.model.routeProperty.HallSection
-import com.example.plauenblod.model.routeProperty.HoldColor
-import com.example.plauenblod.model.routeProperty.RelativePosition
-import com.example.plauenblod.model.routeProperty.Sector
+import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.route.model.routeProperty.HallSection
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
+import com.example.plauenblod.feature.route.model.routeProperty.RelativePosition
+import com.example.plauenblod.feature.route.model.routeProperty.Sector
 
 @Composable
 fun CreateRouteForm(

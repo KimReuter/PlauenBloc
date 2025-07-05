@@ -24,8 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
-import com.example.plauenblod.model.routeProperty.Difficulty
-import com.example.plauenblod.model.routeProperty.HoldColor
+import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import com.example.plauenblod.model.LabeledEnum
 import com.example.plauenblod.extension.toColor
 

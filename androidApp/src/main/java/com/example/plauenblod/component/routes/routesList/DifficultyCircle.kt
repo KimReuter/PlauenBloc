@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.plauenblod.extension.toColor
-import com.example.plauenblod.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
 
 @Composable
 fun DifficultyCircle(

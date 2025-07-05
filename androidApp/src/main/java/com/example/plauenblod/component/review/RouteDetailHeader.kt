@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.plauenblod.component.routes.routesList.DifficultyCircle
-import com.example.plauenblod.model.Route
+import com.example.plauenblod.feature.route.model.Route
 
 @Composable
 fun RouteDetailHeader(

@@ -1,17 +1,19 @@
 package com.example.plauenblod.di
 
-import com.example.plauenblod.data.auth.AuthRepository
-import com.example.plauenblod.data.auth.FirebaseAuthRepository
-import com.example.plauenblod.data.route.FireBaseRouteRepository
-import com.example.plauenblod.data.route.RouteRepository
-import com.example.plauenblod.data.routeReview.FireBaseRouteReviewRepository
-import com.example.plauenblod.data.routeReview.RouteReviewRepository
-import com.example.plauenblod.viewmodel.AuthViewModel
-import com.example.plauenblod.viewmodel.RouteReviewViewModel
-import com.example.plauenblod.viewmodel.RouteViewModel
+import com.example.plauenblod.feature.auth.repository.AuthRepository
+import com.example.plauenblod.feature.auth.repository.FirebaseAuthRepository
+import com.example.plauenblod.feature.route.repository.FireBaseRouteRepository
+import com.example.plauenblod.feature.route.repository.RouteRepository
+import com.example.plauenblod.feature.routeReview.repository.FireBaseRouteReviewRepository
+import com.example.plauenblod.feature.routeReview.repository.RouteReviewRepository
+import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.routeReview.viewmodel.RouteReviewViewModel
+import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
+import com.example.plauenblod.feature.user.repository.FirebaseUserRepository
+import com.example.plauenblod.feature.user.repository.UserRepository
+import com.example.plauenblod.feature.user.viewmodel.UserViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val appModule = module {
@@ -20,16 +22,20 @@ val appModule = module {
 
     single<CoroutineScope> { CoroutineScope(Dispatchers.Main) }
 
-    single { AuthViewModel(get(), get()) }
+    single<AuthRepository> { FirebaseAuthRepository() }
 
     single<RouteRepository> { FireBaseRouteRepository() }
 
-    single<AuthRepository> { FirebaseAuthRepository() }
+    single<RouteReviewRepository> { FireBaseRouteReviewRepository() }
 
-    single< RouteReviewRepository> { FireBaseRouteReviewRepository() }
+    single<UserRepository> { FirebaseUserRepository() }
+
+    single { AuthViewModel(get(), get()) }
 
     single { RouteViewModel(get(), get()) }
 
     single { RouteReviewViewModel(get(), get()) }
+
+    single { UserViewModel(get(), get()) }
 
 }
