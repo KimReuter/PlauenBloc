@@ -5,7 +5,10 @@ import com.example.plauenblod.feature.user.model.UserDto
 import com.example.plauenblod.feature.user.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class UserViewModel(
@@ -26,6 +29,25 @@ class UserViewModel(
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    private val _allUsers = MutableStateFlow<List<UserDto>>(emptyList())
+    val allUsers: StateFlow<List<UserDto>> = _allUsers
+
+
+    val filteredUsers: StateFlow<List<UserDto>> = combine(
+        allUsers,
+        searchQuery
+    ) { users, query ->
+        if (query.isBlank()) users
+        else users.filter { it.userName?.contains(query, ignoreCase = true) == true }
+    }.stateIn(
+        coroutineScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
 
     fun loadUser(userId: String, onResult: (Boolean) -> Unit = {}) {
         coroutineScope.launch {
@@ -49,6 +71,16 @@ class UserViewModel(
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+
+    fun loadAllUsers() {
+        coroutineScope.launch {
+            userRepository.getAllUsers()
+                .collect { users ->
+                    _allUsers.value = users
+                }
         }
     }
 
@@ -76,12 +108,15 @@ class UserViewModel(
         }
     }
 
-
     fun clearError() {
         _errorMessage.value = null
     }
 
     fun resetUser() {
         _userState.value = null
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 }

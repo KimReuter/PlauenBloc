@@ -53,7 +53,8 @@ fun ReviewItem(
     backgroundColor: Color,
     currentUserId: String,
     onEdit: (RouteReview) -> Unit,
-    onDelete: (RouteReview) -> Unit
+    onDelete: (RouteReview) -> Unit,
+    onUserClick: (String) -> Unit
     ) {
     var menuExpanded by remember { mutableStateOf(false) }
     var textExpanded by remember { mutableStateOf(false) }
@@ -69,7 +70,8 @@ fun ReviewItem(
 
         Row(
             verticalAlignment = Alignment.Top,
-            modifier = Modifier.constrainAs(profile) {
+            modifier = Modifier
+                .constrainAs(profile) {
                 top.linkTo(parent.top)
                 start.linkTo(parent.start)
             }
@@ -80,6 +82,7 @@ fun ReviewItem(
                 placeholder = painterResource(R.drawable.placeholderprofileimage),
                 error = painterResource(R.drawable.placeholderprofileimage),
                 modifier = Modifier
+                    .clickable { onUserClick(review.userId)}
                     .size(40.dp)
                     .clip(CircleShape)
             )
@@ -88,7 +91,9 @@ fun ReviewItem(
                 Text(
                     text = review.userName.ifBlank { "Anonymer Nutzer" },
                     style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .clickable { onUserClick(review.userId)}
                 )
                 review.timeStamp?.let { instant ->
                     val relativeTime = getRelativeTime(instant)

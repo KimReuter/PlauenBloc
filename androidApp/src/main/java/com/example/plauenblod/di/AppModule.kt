@@ -7,6 +7,9 @@ import com.example.plauenblod.feature.route.repository.RouteRepository
 import com.example.plauenblod.feature.routeReview.repository.FireBaseRouteReviewRepository
 import com.example.plauenblod.feature.routeReview.repository.RouteReviewRepository
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.chat.repository.ChatRepository
+import com.example.plauenblod.feature.chat.repository.FirebaseChatRepository
+import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
 import com.example.plauenblod.feature.routeReview.viewmodel.RouteReviewViewModel
 import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
 import com.example.plauenblod.feature.user.repository.FirebaseUserRepository
@@ -30,6 +33,8 @@ val appModule = module {
 
     single<UserRepository> { FirebaseUserRepository() }
 
+    single<ChatRepository> { FirebaseChatRepository() }
+
     single { AuthViewModel(get(), get()) }
 
     single { RouteViewModel(get(), get()) }
@@ -37,5 +42,7 @@ val appModule = module {
     single { RouteReviewViewModel(get(), get()) }
 
     single { UserViewModel(get(), get()) }
+
+    single { ChatViewModel(get(), get()) }
 
 }

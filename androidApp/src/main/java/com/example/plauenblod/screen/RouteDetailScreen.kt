@@ -32,6 +32,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +42,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.plauenblod.component.navigation.TabItem
 import com.example.plauenblod.component.review.ReviewDialogs
 import com.example.plauenblod.component.review.ReviewListSection
 import com.example.plauenblod.component.review.ReviewSheetModal
@@ -68,7 +72,9 @@ fun RouteDetailScreen(
     routeReviewViewModel: RouteReviewViewModel = koinInject(),
     authViewModel: AuthViewModel = koinInject(),
     userViewModel: UserViewModel = koinInject(),
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    navController: NavController,
+    selectedTab: MutableState<TabItem>
 ) {
     // Routen
     val allRoutes by routeViewModel.routes.collectAsState()
@@ -270,7 +276,10 @@ fun RouteDetailScreen(
                         onDelete = { review ->
                             reviewBeingEdited = review
                             dialogState = DialogState.ShowDeleteConfirm
-                        }
+                        },
+                        onUserClick = { },
+                        navController = navController,
+                        selectedTab = selectedTab
                     )
                 }
 
