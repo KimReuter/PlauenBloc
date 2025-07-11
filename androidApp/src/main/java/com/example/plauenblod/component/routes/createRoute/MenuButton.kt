@@ -94,7 +94,7 @@ fun MenuButton(
 
             DropdownMenuItem(
                 text = { Text(
-                    "Filter anzeigen",
+                    "Filtern",
                     color = MaterialTheme.colorScheme.onPrimary,
                     fontWeight = FontWeight.SemiBold
                     ) },

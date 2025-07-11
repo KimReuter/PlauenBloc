@@ -6,7 +6,6 @@ import com.example.plauenblod.feature.chat.model.Message
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
-import com.google.firebase.Timestamp
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -108,8 +107,8 @@ class FirebaseChatRepository(
         }
     }
 
-    override suspend fun sendMessage(chatId: String, message: String, senderId: String) {
-        Log.d(TAG, "sendMessage: Sende Nachricht '$message' von $senderId in Chat $chatId")
+    override suspend fun sendMessage(chatId: String, messageText: String, senderId: String, recipientId: String, routeId: String?) {
+        Log.d(TAG, "sendMessage: Sende Nachricht '$messageText' von $senderId in Chat $chatId")
 
         val messagesRef = db.collection("chats").document(chatId).collection("messages")
         val now: Long = System.currentTimeMillis()
@@ -118,9 +117,11 @@ class FirebaseChatRepository(
         val newMessage = Message(
             id = newMessageRef.id,
             senderId = senderId,
-            content = message,
+            recipientId = recipientId,
+            messageText = messageText,
             chatId = chatId,
-            timeStamp = now
+            timeStamp = now,
+            routeId = routeId
         )
 
         newMessageRef.set(newMessage).await()
@@ -128,7 +129,7 @@ class FirebaseChatRepository(
 
         db.collection("chats").document(chatId).update(
             mapOf(
-                "lastMessage" to message,
+                "lastMessage" to messageText,
                 "lastTimeStamp" to now
             )
         ).await()

@@ -4,8 +4,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -24,12 +26,22 @@ fun BoulderSearchBar(
         value = query,
         onValueChange = onQueryChanged,
         label = { Text("Boulder suchen") },
-        placeholder = { Text("Gib eine Zahl ein") },
+        placeholder = { Text("Gib den Namen ein") },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = "Suche"
             )
+        },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChanged("") }) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Eingabe löschen"
+                    )
+                }
+            }
         },
         singleLine = true,
         shape = RoundedCornerShape(16.dp),

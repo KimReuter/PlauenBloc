@@ -45,6 +45,7 @@ import com.example.plauenblod.feature.chat.component.MessagesList
 import com.example.plauenblod.feature.chat.model.Message
 import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
+import com.example.plauenblod.screen.BoulderDetailRoute
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -66,6 +67,7 @@ fun ChatScreen(
     val scope = rememberCoroutineScope()
     var editMode by rememberSaveable { mutableStateOf(false) }
     var messageToEdit by rememberSaveable { mutableStateOf<Message?>(null) }
+    val sharedRoutes by chatViewModel.sharedRoutes.collectAsState()
 
     LaunchedEffect(targetUserId) {
         userViewModel.loadUser(targetUserId)
@@ -74,7 +76,9 @@ fun ChatScreen(
 
     when {
         isLoading -> {
-            CircularProgressIndicator()
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
 
         userState != null -> {
@@ -102,16 +106,20 @@ fun ChatScreen(
                     },
                     modifier = Modifier
                         .weight(1f)
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    onRouteClick = { routeId ->
+                        navController.navigate(BoulderDetailRoute(routeId))
+                    } ,
+                    sharedRoutes = sharedRoutes
                 )
 
                 ChatInput(
-                    initialText = messageToEdit?.content ?: "",
+                    initialText = messageToEdit?.messageText ?: "",
                     onSend = { text ->
                         if (editMode && messageToEdit != null) {
                             chatViewModel.updateMessage(messageToEdit!!.id!!, text)
                         } else {
-                            chatViewModel.sendMessage(text, currentUserId)
+                            chatViewModel.sendMessage(text, currentUserId, targetUserId)
                         }
                         editMode = false
                         messageToEdit = null

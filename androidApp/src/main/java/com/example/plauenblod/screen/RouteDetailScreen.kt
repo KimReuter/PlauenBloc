@@ -43,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.plauenblod.component.navigation.TabItem
 import com.example.plauenblod.component.review.ReviewDialogs
 import com.example.plauenblod.component.review.ReviewListSection
@@ -55,6 +54,8 @@ import com.example.plauenblod.component.review.RouteInformationSection
 import com.example.plauenblod.feature.routeReview.model.RouteReview
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.chat.component.ShareRouteDialog
+import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
 import com.example.plauenblod.feature.routeReview.viewmodel.RouteReviewViewModel
 import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
@@ -72,12 +73,13 @@ fun RouteDetailScreen(
     routeReviewViewModel: RouteReviewViewModel = koinInject(),
     authViewModel: AuthViewModel = koinInject(),
     userViewModel: UserViewModel = koinInject(),
+    chatViewModel: ChatViewModel = koinInject(),
     onBackClick: () -> Unit,
     navController: NavController,
     selectedTab: MutableState<TabItem>
 ) {
     // Routen
-    val allRoutes by routeViewModel.routes.collectAsState()
+    val allRoutes by routeViewModel.allRoutes.collectAsState()
     val route = allRoutes.find { it.id == routeId }
 
     // Review anzeigen
@@ -131,6 +133,10 @@ fun RouteDetailScreen(
                     reviewCompleted != false
             )
 
+    // Route teilen
+    var showShareDialog by remember { mutableStateOf(false) }
+    var allUsers = userViewModel.filteredUsers.collectAsState().value.filter { it.uid != currentUserId }
+
     fun resetReview() {
         reviewBeingEdited = null
         reviewComment = ""
@@ -163,6 +169,10 @@ fun RouteDetailScreen(
             shouldReopenSheet = false
             showReviewSheet = true
         }
+    }
+
+    LaunchedEffect (Unit) {
+        userViewModel.loadAllUsers()
     }
 
     Scaffold(
@@ -245,6 +255,7 @@ fun RouteDetailScreen(
                         RouteActionButtons(
                             onReviewClick = { showReviewSheet = true },
                             onAddToListClick = { },
+                            onShareRoute = { showShareDialog = true },
                             isReviewEnabled = !hasUserReviewed
                         )
                     }
@@ -396,6 +407,22 @@ fun RouteDetailScreen(
                     }
                 )
             }
+        }
+
+        if (showShareDialog) {
+            ShareRouteDialog(
+                routeId = route.id,
+                allUsers = allUsers,
+                onSend = { message, routeId, recipientId ->
+                    chatViewModel.sendMessage(
+                        messageText = message,
+                        senderId = currentUserId,
+                        recipientId = recipientId,
+                        routeId = routeId
+                    )
+                },
+                onDismiss = { showShareDialog = false }
+            )
         }
     }
 }

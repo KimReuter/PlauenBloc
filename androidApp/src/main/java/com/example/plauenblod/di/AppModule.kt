@@ -43,6 +43,6 @@ val appModule = module {
 
     single { UserViewModel(get(), get()) }
 
-    single { ChatViewModel(get(), get()) }
+    single { ChatViewModel(get(), get(), get()) }
 
 }

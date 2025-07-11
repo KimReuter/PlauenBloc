@@ -10,6 +10,8 @@ import dev.gitlive.firebase.firestore.firestore
 
 class FireBaseRouteRepository: RouteRepository {
 
+    val db = Firebase.firestore
+
     override suspend fun createRoute(route: Route): Result<Unit> {
         return try {
             val routeMap = mapOf(
@@ -26,7 +28,7 @@ class FireBaseRouteRepository: RouteRepository {
             )
             println("📤 FirebaseRepo → createRoute(): Sende Route an Firestore:")
 
-            Firebase.firestore.collection("routes").add(routeMap)
+            db.collection("routes").add(routeMap)
             println("✅ FirebaseRepo → createRoute(): Erfolgreich hinzugefügt!")
             Result.success(Unit)
         } catch (e: Exception) {
@@ -51,7 +53,7 @@ class FireBaseRouteRepository: RouteRepository {
                 "y" to updatedRoute.y,
                 "points" to updatedRoute.points
             )
-            Firebase.firestore.collection("routes")
+            db.collection("routes")
                 .document(routeId)
                 .set(routeMap)
             println("✅ Route $routeId erfolgreich aktualisiert.")
@@ -64,7 +66,7 @@ class FireBaseRouteRepository: RouteRepository {
 
     override suspend fun deleteRoute(routeId: String): Result<Unit> {
         return try {
-            Firebase.firestore.collection("routes").document(routeId).delete()
+            db.collection("routes").document(routeId).delete()
             println("🗑️ FirebaseRepo -> deleteRoute(): Route $routeId gelöscht.")
             Result.success(Unit)
         } catch (e: Exception) {
@@ -75,20 +77,17 @@ class FireBaseRouteRepository: RouteRepository {
 
     override suspend fun getAllRoutes(): List<Route> {
         return try {
-            val snapshot = Firebase.firestore.collection("routes").get().documents
+            val snapshot = db.collection("routes").get().documents
+
             snapshot.mapNotNull { doc ->
                 try {
                     Route(
                         id = doc.id,
                         name = doc.get("name") as? String ?: return@mapNotNull null,
-                        hall = (doc.get("hall") as? String)?.let { HallSection.valueOf(it) }
-                            ?: return@mapNotNull null,
-                        sector = (doc.get("sector") as? String)?.let { Sector.valueOf(it) }
-                            ?: return@mapNotNull null,
-                        holdColor = (doc.get("holdColor") as? String)?.let { HoldColor.valueOf(it) }
-                            ?: return@mapNotNull null,
-                        difficulty = (doc.get("difficulty") as? String)?.let { Difficulty.valueOf(it) }
-                            ?: return@mapNotNull null,
+                        hall = (doc.get("hall") as? String)?.let { HallSection.valueOf(it) } ?: return@mapNotNull null,
+                        sector = (doc.get("sector") as? String)?.let { Sector.valueOf(it) } ?: return@mapNotNull null,
+                        holdColor = (doc.get("holdColor") as? String)?.let { HoldColor.valueOf(it) } ?: return@mapNotNull null,
+                        difficulty = (doc.get("difficulty") as? String)?.let { Difficulty.valueOf(it) } ?: return@mapNotNull null,
                         number = (doc.get("number") as? Long)?.toInt() ?: return@mapNotNull null,
                         description = doc.get("description") as? String ?: "",
                         setter = doc.get("setter") as? String ?: "",
@@ -101,7 +100,32 @@ class FireBaseRouteRepository: RouteRepository {
                 }
             }
         } catch (e: Exception) {
+            println("❌ Fehler beim Abrufen der Routen: ${e.message}")
             emptyList()
+        }
+    }
+
+    override suspend fun getRouteById(routeId: String): Route? {
+        return try {
+            val doc = db.collection("routes").document(routeId).get()
+
+            Route(
+                id = doc.id,
+                name = doc.get("name") as? String ?: return null,
+                hall = (doc.get("hall") as? String)?.let { HallSection.valueOf(it) } ?: return null,
+                sector = (doc.get("sector") as? String)?.let { Sector.valueOf(it) } ?: return null,
+                holdColor = (doc.get("holdColor") as? String)?.let { HoldColor.valueOf(it) } ?: return null,
+                difficulty = (doc.get("difficulty") as? String)?.let { Difficulty.valueOf(it) } ?: return null,
+                number = (doc.get("number") as? Long)?.toInt() ?: return null,
+                description = doc.get("description") as? String ?: "",
+                setter = doc.get("setter") as? String ?: "",
+                x = (doc.get("x") as? Double)?.toFloat() ?: return null,
+                y = (doc.get("y") as? Double)?.toFloat() ?: return null,
+                points = (doc.get("points") as? Long)?.toInt() ?: 0
+            )
+        } catch (e: Exception) {
+            println("❌ Fehler in getRouteById: ${e.message}")
+            null
         }
     }
 }

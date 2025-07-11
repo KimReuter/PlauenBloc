@@ -2,11 +2,16 @@ package com.example.plauenblod.feature.route.viewmodel
 
 import com.example.plauenblod.feature.auth.UserRole
 import com.example.plauenblod.feature.route.model.Route
+import com.example.plauenblod.feature.route.model.RouteFilter
 import com.example.plauenblod.feature.route.model.util.calculatePoints
 import com.example.plauenblod.feature.route.repository.RouteRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class RouteViewModel(
@@ -19,11 +24,44 @@ class RouteViewModel(
     private val _routeEdited = MutableStateFlow<Result<Unit>?>(null)
     val routeEdited: StateFlow<Result<Unit>?> = _routeEdited
 
-    private val _routes = MutableStateFlow<List<Route>>(emptyList())
-    val routes: StateFlow<List<Route>> = _routes
+    private val _allRoutes = MutableStateFlow<List<Route>>(emptyList())
+    val allRoutes: StateFlow<List<Route>> = _allRoutes
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    val searchedRoutes: StateFlow<List<Route>> = combine(
+        allRoutes, searchQuery
+    ) { routes, query ->
+        if (query.isBlank()) {
+            routes
+        } else {
+            routes.filter { it.name.contains(query, ignoreCase = true) }
+        }
+    }.stateIn(
+        scope = coroutineScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    private val _availableSetters = MutableStateFlow(listOf("Jens Grimm", "Jörg Schwerdt", "Jörg Band"))
+    val availableSetters = _availableSetters.asStateFlow()
+
+    private val _filterState = MutableStateFlow(RouteFilter())
+    val filterState = _filterState.asStateFlow()
+
+    val filteredRoutes = combine(_allRoutes, _filterState) { routes, filter ->
+        routes.filter { route ->
+            (filter.holdColor == null || route.holdColor == filter.holdColor) &&
+                    (filter.difficulty == null || route.difficulty == filter.difficulty) &&
+                    (filter.sector == null || route.sector == filter.sector) &&
+                    (filter.hall == null || route.hall == filter.hall) &&
+                    (filter.setter.isNullOrBlank() || route.setter.equals(filter.setter, true))
+        }
+    }
 
     fun createRoute(route: Route, onResult: (Boolean) -> Unit = {}) {
         coroutineScope.launch {
@@ -46,7 +84,7 @@ class RouteViewModel(
                 } else {
                     _errorMessage.value = null
                     println("✅ RouteViewModel → createRoute(): Erfolgreich!")
-                    loadRoutes()
+                    loadAllRoutes()
                     onResult(true)
                 }
             } catch (e: Exception) {
@@ -57,22 +95,42 @@ class RouteViewModel(
         }
     }
 
-    fun clearRouteCreatedStatus() {
-        _routeCreated.value = null
+    fun addSetterIfNew(setter: String) {
+        if (setter.isNotBlank() && setter !in _availableSetters.value) {
+            _availableSetters.value = _availableSetters.value + setter
+        }
     }
 
-    fun clearRouteEditedStatus() {
-        _routeEdited.value = null
+    fun applyFilter(filter: RouteFilter) {
+        filter.setter?.let { addSetterIfNew(it) }
+        _filterState.value = filter
+    }
+
+    fun clearRouteCreatedStatus() {
+        _routeCreated.value = null
     }
 
     fun clearError() {
         _errorMessage.value = null
     }
 
-    fun loadRoutes() {
+    fun loadAllRoutes() {
         coroutineScope.launch {
-            _routes.value = routeRepository.getAllRoutes()
+            val allRoutes = routeRepository.getAllRoutes()
+            _allRoutes.value = allRoutes
         }
+    }
+
+    fun searchRoutesByName(query: String) {
+        coroutineScope.launch {
+            val allRoutes = routeRepository.getAllRoutes()
+            val filtered = allRoutes.filter { it.name.contains(query, ignoreCase = true) }
+            _allRoutes.value = filtered
+        }
+    }
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
     }
 
     fun deleteRoute(userRole: UserRole, id: String, onResult: (Boolean) -> Unit = {}) {
@@ -84,7 +142,7 @@ class RouteViewModel(
                     return@launch
                 }
                 routeRepository.deleteRoute(id)
-                loadRoutes()
+                loadAllRoutes()
                 _errorMessage.value = null
                 onResult(true)
             } catch (e: Exception) {
@@ -107,7 +165,7 @@ class RouteViewModel(
                 if (result.isSuccess) {
                     println("✅ RouteViewModel → editRoute(): Erfolgreich bearbeitet!")
                     _errorMessage.value = null
-                    loadRoutes()
+                    loadAllRoutes()
                     onResult(true)
                 } else {
                     val error = result.exceptionOrNull()?.message ?: "Bearbeiten fehlgeschlagen."
@@ -124,6 +182,6 @@ class RouteViewModel(
     }
 
     init {
-        loadRoutes()
+        loadAllRoutes()
     }
 }

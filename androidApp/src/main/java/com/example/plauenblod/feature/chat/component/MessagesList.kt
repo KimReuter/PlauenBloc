@@ -1,9 +1,7 @@
 package com.example.plauenblod.feature.chat.component
 
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -22,11 +20,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.plauenblod.feature.chat.model.Message
+import com.example.plauenblod.feature.route.model.Route
 
 @Composable
 fun MessagesList(
     messages: List<Message>,
     currentUserId: String,
+    onRouteClick: (String) -> Unit,
+    sharedRoutes: Map<String, Route>,
     modifier: Modifier = Modifier,
     onLongClick: (Message) -> Unit,
     selectedMessage: Message?
@@ -68,31 +69,50 @@ fun MessagesList(
                     shape = RoundedCornerShape(12.dp),
                     tonalElevation = if (isSelected) 4.dp else 2.dp
                 ) {
-                    Text(
-                        text = message.content.orEmpty(),
-                        modifier = Modifier
-                            .padding(12.dp)
-                            .widthIn(max = 280.dp),
-                        color = if (isOwnMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                    )
-                }
-
-
-                message.reactions?.values?.distinct()?.takeIf { it.isNotEmpty() }?.let { emojiList ->
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .offset(x = 8.dp, y = 8.dp)
-                            .padding(end = 16.dp)
-                    ) {
-                        emojiList.forEach { emoji ->
+                    if (message.routeId != null) {
+                        val route = sharedRoutes[message.routeId]
+                        if (route != null) {
+                            RoutePreviewCard(
+                                route = route,
+                                onRouteClick = { onRouteClick(route.id) },
+                                sharedMessage = message.messageText
+                            )
+                        } else {
                             Text(
-                                text = emoji,
-                                fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                                text = "⏳ Route wird geladen...",
+                                modifier = Modifier
+                                    .padding(12.dp)
+                                    .widthIn(max = 280.dp)
                             )
                         }
+                    } else {
+                        Text(
+                            text = message.messageText.orEmpty(),
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .widthIn(max = 280.dp),
+                            color = if (isOwnMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+                        )
                     }
                 }
+
+
+                message.reactions?.values?.distinct()?.takeIf { it.isNotEmpty() }
+                    ?.let { emojiList ->
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .offset(x = 8.dp, y = 8.dp)
+                                .padding(end = 16.dp)
+                        ) {
+                            emojiList.forEach { emoji ->
+                                Text(
+                                    text = emoji,
+                                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
+                                )
+                            }
+                        }
+                    }
             }
         }
     }

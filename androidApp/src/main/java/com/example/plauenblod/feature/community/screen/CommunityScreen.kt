@@ -37,7 +37,7 @@ fun CommunityScreen(
     userViewModel: UserViewModel = koinInject(),
     onUserClick: (UserDto) -> Unit
 ) {
-    val allUsers by userViewModel.allUsers.collectAsState()
+    val allUsers by userViewModel.filteredUsers.collectAsState()
     val searchQuery by userViewModel.searchQuery.collectAsState()
     val isLoading by userViewModel.isLoading.collectAsState()
 

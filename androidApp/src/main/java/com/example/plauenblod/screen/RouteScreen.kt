@@ -52,6 +52,7 @@ import com.example.plauenblod.feature.route.model.routeProperty.HallSection
 import com.example.plauenblod.feature.route.model.routeProperty.RelativePosition
 import com.example.plauenblod.feature.route.model.routeProperty.Sector
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.route.component.FilterBottomSheet
 import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
 import com.example.plauenblod.viewmodel.state.DialogState
 import com.example.plauenblod.viewmodel.state.RouteFormState
@@ -83,8 +84,8 @@ fun RouteScreen(
     var showMap by remember { mutableStateOf(true) }
     val userRole by authViewModel.userRole.collectAsState()
     var showCreateSheet by remember { mutableStateOf(false) }
-    val allRoutes by routeViewModel.routes.collectAsState()
-    val filteredRoutes = allRoutes.filter {
+    val routes by routeViewModel.searchedRoutes.collectAsState()
+    val filteredRoutes = routes.filter {
         it.sector.hallSection() == selectedHall
     }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -96,13 +97,18 @@ fun RouteScreen(
     }
     val routeCreated by routeViewModel.routeCreated.collectAsState()
     var refreshKey by remember { mutableStateOf(0) }
-    val takenNumbers = allRoutes
+    val takenNumbers = routes
         .filter { it.sector == formState.sector }
         .map { it.number }
     val availableNumbers = (1..25).filterNot { it in takenNumbers }
 
     //Route suchen
     var showBoulderSearchBar by remember { mutableStateOf(false) }
+    val searchQuery by routeViewModel.searchQuery.collectAsState()
+
+    // Route filtern
+    var showFilterSheet by remember { mutableStateOf(false) }
+    val filterState by routeViewModel.filterState.collectAsState()
 
     // Route bearbeiten
     var selectedRoute by remember { mutableStateOf<Route?>(null) }
@@ -139,8 +145,8 @@ fun RouteScreen(
         routeViewModel.clearError()
     }
 
-    LaunchedEffect(allRoutes) {
-        routeViewModel.loadRoutes()
+    LaunchedEffect(routes) {
+        routeViewModel.loadAllRoutes()
     }
 
     LaunchedEffect(routeCreated) {
@@ -208,7 +214,7 @@ fun RouteScreen(
                                 showCreateSheet = true
                             },
                             onFilterClick = {
-                                println("Filter geöffnet")
+                                showFilterSheet = true
                             }
                         )
                     }
@@ -235,8 +241,8 @@ fun RouteScreen(
                             .padding(vertical = 8.dp)
                     ) {
                         BoulderSearchBar(
-                            query = query,
-                            onQueryChanged = { query = it },
+                            query = searchQuery,
+                            onQueryChanged = routeViewModel::updateSearchQuery,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -470,6 +476,25 @@ fun RouteScreen(
                     else -> {}
                 }
             }
+        }
+        if (showFilterSheet) {
+            ModalBottomSheet(
+                onDismissRequest = { showFilterSheet = false},
+                modifier = Modifier.fillMaxWidth(),
+                sheetState = sheetState
+            ) {
+                FilterBottomSheet(
+                    currentFilter = filterState,
+                    onFilterChanged = {
+                        routeViewModel.applyFilter(it)
+                        showFilterSheet = false
+                    },
+                    onDismiss = {
+                        showFilterSheet = false
+                    }
+                )
+            }
+
         }
     }
 }

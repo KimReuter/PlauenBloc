@@ -1,9 +1,11 @@
 package com.example.plauenblod.feature.chat.viewmodel
 
+import androidx.compose.runtime.mutableStateMapOf
 import com.example.plauenblod.feature.chat.model.Chat
 import com.example.plauenblod.feature.chat.model.Message
 import com.example.plauenblod.feature.chat.repository.ChatRepository
-import com.google.firebase.firestore.auth.User
+import com.example.plauenblod.feature.route.model.Route
+import com.example.plauenblod.feature.route.repository.RouteRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,6 +15,7 @@ import kotlinx.coroutines.launch
 
 class ChatViewModel(
     private val chatRepository: ChatRepository,
+    private val routeRepository: RouteRepository,
     private val coroutineScope: CoroutineScope
 ) {
     private val _chat = MutableStateFlow<Chat?>(null)
@@ -23,6 +26,9 @@ class ChatViewModel(
 
     private val _selectedMessage = MutableStateFlow<Message?>(null)
     val selectedMessage = _selectedMessage.asStateFlow()
+
+    private val _sharedRoutes = MutableStateFlow<Map<String, Route>>(emptyMap())
+    val sharedRoutes: StateFlow<Map<String, Route>> = _sharedRoutes
 
     private var messageJob: Job? = null
     private var currentUserId: String? = null
@@ -42,18 +48,24 @@ class ChatViewModel(
                     .collect { newMessages ->
                         println("initChat: Neue Nachrichten empfangen: ${newMessages.size}")
                         _messages.value = newMessages
+
+                        newMessages.forEach { msg ->
+                            msg.routeId?.let { routeId ->
+                                loadRouteIfNeeded(routeId)
+                            }
+                        }
                     }
             }
         }
     }
 
-    fun sendMessage(message: String, senderId: String) {
+    fun sendMessage(messageText: String, senderId: String, recipientId: String, routeId: String? = null) {
         val chatId = _chat.value?.id ?: return
         println("SendMessage wird ausgeführt")
         coroutineScope.launch {
-            chatRepository.sendMessage(chatId, message, senderId)
+            chatRepository.sendMessage(chatId, messageText, senderId, recipientId, routeId)
         }
-        println("Nachricht wurde gesendet: $message im Chat $chatId von $senderId")
+        println("Nachricht wurde gesendet: $messageText im Chat $chatId von $senderId")
     }
 
     fun reactToMessage(message: Message, emoji: String) {
@@ -70,6 +82,19 @@ class ChatViewModel(
                 userId = userId,
                 emoji = emoji
             )
+        }
+    }
+
+    fun loadRouteIfNeeded(routeId: String) {
+        if (!sharedRoutes.value.containsKey(routeId)) {
+            coroutineScope.launch {
+                println("Versuche Route $routeId zu laden...")
+                val route = routeRepository.getRouteById(routeId)
+                route?.let {
+                    _sharedRoutes.value = _sharedRoutes.value + (routeId to it)
+                    println("Route $routeId geladen: ${it.name}")
+                } ?: println("Route $routeId konnte nicht gefunden werden.")
+            }
         }
     }
 
