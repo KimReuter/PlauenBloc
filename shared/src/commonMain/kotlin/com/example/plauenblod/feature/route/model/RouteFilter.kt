@@ -11,5 +11,5 @@ data class RouteFilter(
     val number: Int? = null,
     val holdColor: HoldColor? = null,
     val difficulty: Difficulty? = null,
-    val setter: String? = null
+    val routeSetter: String? = null
 )

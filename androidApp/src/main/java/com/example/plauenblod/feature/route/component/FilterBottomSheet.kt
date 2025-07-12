@@ -3,7 +3,9 @@ package com.example.plauenblod.feature.route.component
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -13,11 +15,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.plauenblod.component.routes.createRoute.DropdownSelector
+import com.example.plauenblod.extension.toColor
 import com.example.plauenblod.feature.route.model.RouteFilter
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
-import com.example.plauenblod.feature.route.model.routeProperty.HallSection
 import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
-import com.example.plauenblod.feature.route.model.routeProperty.Sector
 
 @Composable
 fun FilterBottomSheet(
@@ -25,29 +27,54 @@ fun FilterBottomSheet(
     onFilterChanged: (RouteFilter) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedHall by remember { mutableStateOf(currentFilter.hall) }
-    var selectedSector by remember { mutableStateOf(currentFilter.sector) }
-    var selectedColor by remember { mutableStateOf(currentFilter.holdColor) }
-    var selectedDifficulty by remember { mutableStateOf(currentFilter.difficulty) }
+    var selectedSetter by remember { mutableStateOf(currentFilter.routeSetter ?: "Alle") }
+    val allSetters = listOf("Jens Grimm", "Jörg Schwerdt", "Jörg Band")
+    var selectedColor by remember { mutableStateOf(currentFilter.holdColor ?: HoldColor.BLUE) }
+    var selectedDifficulty by remember { mutableStateOf(currentFilter.difficulty ?: Difficulty.YELLOW) }
+
 
     Column(Modifier.padding(16.dp)) {
-        FilterDropdown("Hall", HallSection.values(), selectedHall) { selectedHall = it }
-        FilterDropdown("Sektor", Sector.values(), selectedSector) { selectedSector = it }
-        FilterDropdown("Farbe", HoldColor.values(), selectedColor) { selectedColor = it }
-        FilterDropdown("Schwierigkeit", Difficulty.values(), selectedDifficulty) { selectedDifficulty = it }
+        DropdownSelector(
+            label = "Farbe",
+            options = HoldColor.values().toList(),
+            selected = selectedColor,
+            onSelected = { selectedColor = it }
+        )
+
+        DropdownSelector(
+            label = "Schwierigkeit",
+            options = Difficulty.values().toList(),
+            selected = selectedDifficulty,
+            onSelected = { selectedDifficulty = it }
+        )
+
+        DropdownSelector(
+            label = "Routesetter:in",
+            options = allSetters,
+            selected = selectedSetter,
+            onSelected = { selectedSetter = it }
+        )
 
         Row(horizontalArrangement = Arrangement.SpaceEvenly) {
-            Button(onClick = onDismiss) { Text("Abbrechen") }
-            Button(onClick = {
+            Button(
+                onClick = onDismiss,
+                modifier = Modifier
+                    .weight(1f)
+                ) { Text("Abbrechen") }
+            Spacer(modifier = Modifier.width(16.dp))
+            Button(
+                onClick = {
                 onFilterChanged(
                     RouteFilter(
-                        hall = selectedHall,
-                        sector = selectedSector,
                         holdColor = selectedColor,
-                        difficulty = selectedDifficulty
+                        difficulty = selectedDifficulty,
+                        routeSetter = if (selectedSetter == "Alle") null else selectedSetter
                     )
                 )
-            }) {
+            },
+                modifier = Modifier
+                    .weight(1f)
+            ) {
                 Text("Übernehmen")
             }
         }

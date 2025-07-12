@@ -59,7 +59,7 @@ class RouteViewModel(
                     (filter.difficulty == null || route.difficulty == filter.difficulty) &&
                     (filter.sector == null || route.sector == filter.sector) &&
                     (filter.hall == null || route.hall == filter.hall) &&
-                    (filter.setter.isNullOrBlank() || route.setter.equals(filter.setter, true))
+                    (filter.routeSetter.isNullOrBlank() || route.setter.equals(filter.routeSetter, true))
         }
     }
 
@@ -102,7 +102,7 @@ class RouteViewModel(
     }
 
     fun applyFilter(filter: RouteFilter) {
-        filter.setter?.let { addSetterIfNew(it) }
+        filter.routeSetter?.let { addSetterIfNew(it) }
         _filterState.value = filter
     }
 

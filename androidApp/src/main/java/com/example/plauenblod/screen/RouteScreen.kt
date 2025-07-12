@@ -92,8 +92,9 @@ fun RouteScreen(
     val scope = rememberCoroutineScope()
 
     // Route erstellen
+    val allSetters = listOf("Jens Grimm", "Jörg Schwerdt", "Jörg Band")
     var formState by rememberSaveable(stateSaver = RouteFormStateSaver.saver()) {
-        mutableStateOf(RouteFormState())
+        mutableStateOf(RouteFormState(setter = allSetters.first()))
     }
     val routeCreated by routeViewModel.routeCreated.collectAsState()
     var refreshKey by remember { mutableStateOf(0) }
@@ -101,6 +102,7 @@ fun RouteScreen(
         .filter { it.sector == formState.sector }
         .map { it.number }
     val availableNumbers = (1..25).filterNot { it in takenNumbers }
+    var setter by rememberSaveable { mutableStateOf(allSetters.first()) }
 
     //Route suchen
     var showBoulderSearchBar by remember { mutableStateOf(false) }
@@ -316,6 +318,7 @@ fun RouteScreen(
                             onNumberChange = { formState = formState.copy(number = it) },
                             description = formState.description,
                             onDescriptionChange = { formState = formState.copy(description = it) },
+                            allSetters = allSetters,
                             setter = formState.setter,
                             onSetterChange = { formState = formState.copy(setter = it) },
                             selectedPoint = formState.selectedPoint?.toOffset(),

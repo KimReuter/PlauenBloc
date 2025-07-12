@@ -52,6 +52,7 @@ fun CreateRouteForm(
     onNumberChange: (Int) -> Unit,
     description: String,
     onDescriptionChange: (String) -> Unit,
+    allSetters: List<String>,
     setter: String,
     onSetterChange: (String) -> Unit,
     onSelectPointClick: () -> Unit,
@@ -62,6 +63,7 @@ fun CreateRouteForm(
     onDismissMap: () -> Unit,
     selectedPoint: Offset?,
     onPointSelected: (Offset) -> Unit,
+
     onCancelClick: () -> Unit,
     availableNumbers: List<Int>
 ) {
@@ -106,6 +108,13 @@ fun CreateRouteForm(
             label = "Name",
             placeholder = "Wie heißt die Route?",
             leadingIcon = Icons.Default.Create
+        )
+
+        DropdownSelector(
+            label = "Routesetter:in",
+            options = allSetters,
+            selected = setter,
+            onSelected = onSetterChange
         )
 
         DropdownSelector(
@@ -187,14 +196,6 @@ fun CreateRouteForm(
             label = "Beschreibung",
             placeholder = "Wie fühlt sich die Route an?",
             leadingIcon = Icons.Default.Description
-        )
-
-        LabeledTextField(
-            value = setter,
-            onValueChange = onSetterChange,
-            label = "Routesetter",
-            placeholder = "Wer hat die Route geschraubt?",
-            leadingIcon = Icons.Default.Person
         )
 
         Spacer(modifier = Modifier.height(16.dp))
