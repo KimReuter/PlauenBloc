@@ -12,3 +12,13 @@ fun Difficulty.toColor(): Color = when (this) {
     Difficulty.RED -> Color(0xFFF44336)
     Difficulty.BROWN -> Color(0xFF795548)
 }
+
+fun Difficulty.toUserFriendlyName(): String = when (this) {
+    Difficulty.WHITE -> "Weiß"
+    Difficulty.PINK -> "Rosa"
+    Difficulty.YELLOW -> "Geld"
+    Difficulty.BLUE -> "Blau"
+    Difficulty.GREEN -> "Grün"
+    Difficulty.RED -> "Rot"
+    Difficulty.BROWN -> "Braun"
+}

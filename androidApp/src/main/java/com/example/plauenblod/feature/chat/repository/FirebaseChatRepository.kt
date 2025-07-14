@@ -74,6 +74,25 @@ class FirebaseChatRepository(
         }
     }
 
+    override suspend fun getChatsForUser(userId: String): List<Chat> {
+        Log.d("FirebaseChatrepo", "Chats werden geladen")
+        return try {
+            val snapshot = Firebase.firestore
+                .collection("chats")
+                .whereArrayContains("participantIds", userId)
+                .orderBy("lastTimeStamp", Query.Direction.DESCENDING)
+                .get()
+                .await()
+
+            snapshot.documents.mapNotNull { doc ->
+                doc.toObject(Chat::class.java)?.copy(id = doc.id)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Fehler beim Abrufen der Chatliste: ${e.message}", e)
+            emptyList()
+        }
+    }
+
     override suspend fun observeMessages(chatId: String): Flow<List<Message>> = callbackFlow {
         Log.d(TAG, "observeMessages: Starte Listener für Chat $chatId")
 

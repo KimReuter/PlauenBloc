@@ -13,5 +13,6 @@ interface AuthRepository {
     suspend fun signIn(email: String, password: String): AuthResult
     suspend fun fetchUserRole(userId: String): UserRole?
     suspend fun sendPasswort(email: String): Result<Unit>
+    fun getCurrentUserId(): String?
     fun signOut()
 }

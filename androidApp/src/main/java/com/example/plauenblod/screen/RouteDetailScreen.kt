@@ -2,6 +2,7 @@ package com.example.plauenblod.screen
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -220,19 +221,12 @@ fun RouteDetailScreen(
             }
         }
     ) { innerPadding ->
-        Card(
+        Column (
             modifier = modifier
                 .animateContentSize()
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(16.dp)
-                .heightIn(min = 600.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            shape = RoundedCornerShape(16.dp)
-
         ) {
             Box {
                 LazyColumn(
@@ -328,31 +322,39 @@ fun RouteDetailScreen(
                             id = reviewBeingEdited?.id.orEmpty()
                         )
                         if (reviewBeingEdited == null) {
-                            routeReviewViewModel.addReview(routeId, reviewWithUserId) { success ->
-                                if (success) {
-                                    if (review.completed) {
-                                        userViewModel.tickRoute(
-                                            userId = currentUserId,
-                                            route = route,
-                                            attempts = review.attempts,
-                                            isFlash = (review.attempts == 1)
-                                        ) { success ->
-                                            if (success) {
-                                                println("✅ Tick erfolgreich beim User gespeichert")
-                                                userViewModel.loadUser(currentUserId)
-                                            } else {
-                                                println("❌ Fehler beim Tick speichern")
+                            routeReviewViewModel.addReview(
+                                routeId = routeId,
+                                stars = reviewWithUserId.stars,
+                                comment = reviewWithUserId.comment,
+                                completed = reviewWithUserId.completed,
+                                attempts = reviewWithUserId.attempts,
+                                perceivedDifficulty = reviewWithUserId.perceivedDifficulty ?: Difficulty.values().first(),
+                                onResult = { success ->
+                                    if (success) {
+                                        if (reviewWithUserId.completed) {
+                                            userViewModel.tickRoute(
+                                                userId = currentUserId,
+                                                route = route,
+                                                attempts = reviewWithUserId.attempts,
+                                                isFlash = (reviewWithUserId.attempts == 1)
+                                            ) { tickSuccess ->
+                                                if (tickSuccess) {
+                                                    println("✅ Tick erfolgreich beim User gespeichert")
+                                                    userViewModel.loadUser(currentUserId)
+                                                } else {
+                                                    println("❌ Fehler beim Tick speichern")
+                                                }
                                             }
                                         }
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Danke für deine Rezension! 🎉")
+                                        }
+                                        routeReviewViewModel.loadReviews(routeId, currentUserId)
+                                        showReviewSheet = false
+                                        resetReview()
                                     }
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Danke für deine Rezension! 🎉")
-                                    }
-                                    routeReviewViewModel.loadReviews(routeId, currentUserId)
-                                    showReviewSheet = false
-                                    resetReview()
                                 }
-                            }
+                            )
                         } else {
                             routeReviewViewModel.updateReview(
                                 routeId,

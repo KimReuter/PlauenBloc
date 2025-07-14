@@ -1,6 +1,7 @@
 package com.example.plauenblod.feature.route.viewmodel
 
 import com.example.plauenblod.feature.auth.UserRole
+import com.example.plauenblod.feature.route.model.FilterKey
 import com.example.plauenblod.feature.route.model.Route
 import com.example.plauenblod.feature.route.model.RouteFilter
 import com.example.plauenblod.feature.route.model.util.calculatePoints
@@ -33,35 +34,30 @@ class RouteViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
 
-    val searchedRoutes: StateFlow<List<Route>> = combine(
-        allRoutes, searchQuery
-    ) { routes, query ->
-        if (query.isBlank()) {
-            routes
-        } else {
-            routes.filter { it.name.contains(query, ignoreCase = true) }
-        }
-    }.stateIn(
-        scope = coroutineScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
-    )
-
     private val _availableSetters = MutableStateFlow(listOf("Jens Grimm", "Jörg Schwerdt", "Jörg Band"))
     val availableSetters = _availableSetters.asStateFlow()
 
     private val _filterState = MutableStateFlow(RouteFilter())
     val filterState = _filterState.asStateFlow()
 
-    val filteredRoutes = combine(_allRoutes, _filterState) { routes, filter ->
+    val filteredRoutes: StateFlow<List<Route>> = combine(
+        _allRoutes,
+        _filterState,
+        _searchQuery
+    ) { routes, filter, query ->
         routes.filter { route ->
             (filter.holdColor == null || route.holdColor == filter.holdColor) &&
                     (filter.difficulty == null || route.difficulty == filter.difficulty) &&
                     (filter.sector == null || route.sector == filter.sector) &&
                     (filter.hall == null || route.hall == filter.hall) &&
-                    (filter.routeSetter.isNullOrBlank() || route.setter.equals(filter.routeSetter, true))
+                    (filter.routeSetter.isNullOrBlank() || route.setter.equals(filter.routeSetter, true)) &&
+                    (query.isBlank() || route.name.contains(query, ignoreCase = true))
         }
-    }
+    }.stateIn(
+        coroutineScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
 
     fun createRoute(route: Route, onResult: (Boolean) -> Unit = {}) {
         coroutineScope.launch {
@@ -104,6 +100,16 @@ class RouteViewModel(
     fun applyFilter(filter: RouteFilter) {
         filter.routeSetter?.let { addSetterIfNew(it) }
         _filterState.value = filter
+    }
+
+    fun clearFilter(key: FilterKey) {
+        val current = _filterState.value
+        _filterState.value = when (key) {
+            FilterKey.Color -> current.copy(holdColor = null)
+            FilterKey.Difficulty -> current.copy(difficulty = null)
+            FilterKey.Sector -> current.copy(sector = null)
+            FilterKey.Setter -> current.copy(routeSetter = null)
+        }
     }
 
     fun clearRouteCreatedStatus() {

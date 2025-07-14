@@ -30,7 +30,7 @@ fun PlauenBlocRoot(
 
     when {
         !isInitialized -> {
-            SplashScreen()
+            SplashScreen(onFinished = {})
         }
         isLoggedIn -> {
             AppStart()

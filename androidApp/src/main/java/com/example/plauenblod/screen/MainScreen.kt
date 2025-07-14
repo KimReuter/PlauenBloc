@@ -1,24 +1,19 @@
 package com.example.plauenblod.screen
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
@@ -33,11 +28,10 @@ import com.example.plauenblod.component.navigation.TabItem
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import com.example.plauenblod.feature.chat.screen.ChatScreen
 import com.example.plauenblod.feature.community.screen.CommunityScreen
-import com.example.plauenblod.feature.user.model.UserDto
+import com.example.plauenblod.feature.user.screen.OwnProfileScreen
 import com.example.plauenblod.feature.user.screen.UserProfileScreen
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
 import kotlinx.serialization.Serializable
-import org.koin.androidx.compose.getKoin
 import org.koin.compose.koinInject
 
 @Serializable
@@ -141,7 +135,28 @@ fun AppStart(
             }
 
             composable<OwnProfileRoute> {
+                val userId = authViewModel.userId.collectAsState().value
+                val user = userViewModel.userState.collectAsState().value
 
+                LaunchedEffect(userId) {
+                    if (userId != null) {
+                        userViewModel.loadUser(userId)
+                    }
+                }
+
+                if (user != null) {
+                    OwnProfileScreen(
+                        onImageUpload = { uri ->
+                            userViewModel.uploadProfileImage(userId!!, uri)
+                        },
+                        onLogout = {
+                            authViewModel.signOut()
+                            navController.navigate(AuthRoute) {
+                                popUpTo(DashboardRoute) { inclusive = true }
+                            }
+                        }
+                    )
+                }
             }
 
             composable<UserProfileRoute> { backStackEntry ->
@@ -216,7 +231,8 @@ fun AppStart(
                         navController.navigate(UserProfileRoute(
                             userId = user.uid ?: ""
                         ))
-                    }
+                    },
+                    navController = navController
                 )
             }
         }

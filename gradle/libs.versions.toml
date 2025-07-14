@@ -22,6 +22,9 @@ coilCompose = "3.0.0-rc02"
 firebaseFirestoreAndroid = "24.10.3"
 firebaseAuthAndroid = "23.0.0"
 firebaseFirestoreKtx = "25.1.4"
+moshiVersion = "1.15.0"
+retrofitVersion = "2.11.0"
+loggingInterceptor = "4.9.3"
 
 [libraries]
 androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
@@ -48,6 +51,10 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 coil-compose = { group = "io.coil-kt.coil3", name = "coil-compose", version.ref = "coilCompose" }
 coil-network-okhttp = { group = "io.coil-kt.coil3", name = "coil-network-okhttp", version.ref = "coilCompose" }
 firebase-core-android = { module = "dev.gitlive:firebase-android", version.ref = "firebase-kmp" }
+moshi = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshiVersion" }
+retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofitVersion" }
+converterMoshi = { group = "com.squareup.retrofit2", name = "converter-moshi", version.ref = "retrofitVersion" }
+logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-interceptor", version.ref = "loggingInterceptor" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

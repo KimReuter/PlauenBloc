@@ -45,14 +45,18 @@ import com.example.plauenblod.component.routes.editRoutes.DeleteRouteDialogs
 import com.example.plauenblod.component.routes.editRoutes.RouteActionSheet
 import com.example.plauenblod.component.routes.routesList.RouteListView
 import com.example.plauenblod.extension.hallSection
+import com.example.plauenblod.extension.toColor
 import com.example.plauenblod.extension.toOffset
 import com.example.plauenblod.extension.toRelativePosition
+import com.example.plauenblod.extension.toUserFriendlyName
 import com.example.plauenblod.feature.route.model.Route
 import com.example.plauenblod.feature.route.model.routeProperty.HallSection
 import com.example.plauenblod.feature.route.model.routeProperty.RelativePosition
 import com.example.plauenblod.feature.route.model.routeProperty.Sector
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import com.example.plauenblod.feature.route.component.FilterBottomSheet
+import com.example.plauenblod.feature.route.component.FilterChip
+import com.example.plauenblod.feature.route.model.FilterKey
 import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
 import com.example.plauenblod.viewmodel.state.DialogState
 import com.example.plauenblod.viewmodel.state.RouteFormState
@@ -84,7 +88,7 @@ fun RouteScreen(
     var showMap by remember { mutableStateOf(true) }
     val userRole by authViewModel.userRole.collectAsState()
     var showCreateSheet by remember { mutableStateOf(false) }
-    val routes by routeViewModel.searchedRoutes.collectAsState()
+    val routes by routeViewModel.filteredRoutes.collectAsState()
     val filteredRoutes = routes.filter {
         it.sector.hallSection() == selectedHall
     }
@@ -257,6 +261,31 @@ fun RouteScreen(
                     onHallSelected = { selectedHall = it },
                     modifier = Modifier.padding(top = 16.dp)
                 )
+
+                Spacer(modifier = modifier.height(8.dp))
+
+                if (
+                    filterState.difficulty != null ||
+                    filterState.sector != null ||
+                    !filterState.routeSetter.isNullOrBlank()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        filterState.difficulty?.let {
+                            FilterChip(text = it.toUserFriendlyName(), onRemove = { routeViewModel.clearFilter(FilterKey.Difficulty) })
+                        }
+                        filterState.sector?.let {
+                            FilterChip(text = it.name, onRemove = { routeViewModel.clearFilter(FilterKey.Sector) })
+                        }
+                        filterState.routeSetter?.takeIf { it.isNotBlank() }?.let {
+                            FilterChip(text = it, onRemove = { routeViewModel.clearFilter(FilterKey.Setter) })
+                        }
+                    }
+                }
 
                 Spacer(modifier = modifier.height(8.dp))
 

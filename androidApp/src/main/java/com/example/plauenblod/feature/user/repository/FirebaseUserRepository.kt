@@ -1,13 +1,12 @@
 package com.example.plauenblod.feature.user.repository
 
 
+import android.util.Log
 import com.example.plauenblod.feature.route.model.Route
 import com.example.plauenblod.feature.route.model.util.calculatePoints
 import com.example.plauenblod.feature.user.model.CompletedRoute
-import com.example.plauenblod.feature.user.model.UserActivity
 import com.example.plauenblod.feature.user.model.UserDto
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -53,6 +52,20 @@ class FirebaseUserRepository : UserRepository {
             }
 
         awaitClose { listener.remove() }
+    }
+
+    override suspend fun updateProfileImage(userId: String, profileImageUrl: String) {
+        Log.d("FirebaseUserRepo", "🖼️ Update Profilbild für User $userId mit URL: $profileImageUrl")
+
+        try {
+            userCollection.document(userId)
+                .update("profileImageUrl", profileImageUrl)
+                .await()
+            Log.d("FirebaseUserRepo", "✅ Profilbild erfolgreich aktualisiert.")
+        } catch (e: Exception) {
+            Log.e("FirebaseUserRepo", "❌ Fehler beim Update des Profilbilds: ${e.message}", e)
+            throw e
+        }
     }
 
     override suspend fun tickRoute(

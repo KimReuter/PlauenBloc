@@ -12,6 +12,16 @@ class FireBaseRouteReviewRepository: RouteReviewRepository {
 
     override suspend fun addReview(routeId: String, review: RouteReview) {
         try {
+            println("📤 Review wird gespeichert für Route $routeId:")
+            println("👤 UserId: ${review.userId}")
+            println("🧑 Name: ${review.userName}")
+            println("🖼️ Bild: ${review.userProfileImageUrl}")
+            println("⭐ Sterne: ${review.stars}")
+            println("💬 Kommentar: ${review.comment}")
+            println("✅ Erfolgreich: ${review.completed}, 🧗 Versuche: ${review.attempts}")
+            println("🎯 Schwierigkeit: ${review.perceivedDifficulty}")
+            println("🕓 Zeitstempel: ${review.timeStamp}")
+
             Firebase.firestore
                 .collection("routes")
                 .document(routeId)
@@ -31,8 +41,19 @@ class FireBaseRouteReviewRepository: RouteReviewRepository {
                 .get()
                 .documents
 
+            println("📥 ${snapshot.size} Reviews geladen für Route $routeId")
+
             snapshot.mapNotNull { doc ->
                 try {
+                    val userId = doc.get("userId") as? String
+                    val userName = doc.get("userName") as? String
+                    val profileImg = doc.get("userProfileImageUrl") as? String
+
+                    println("🔍 Review ${doc.id}:")
+                    println("   👤 userId: $userId")
+                    println("   🧑 userName: $userName")
+                    println("   🖼️ profileImageUrl: $profileImg")
+
                     RouteReview(
                         id = doc.id,
                         routeId = routeId,

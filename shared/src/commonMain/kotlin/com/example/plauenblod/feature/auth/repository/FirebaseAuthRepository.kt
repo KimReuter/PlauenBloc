@@ -67,6 +67,10 @@ class FirebaseAuthRepository(
         userDocRef.set(userData)
     }
 
+    override fun getCurrentUserId(): String? {
+        return auth.currentUser?.uid
+    }
+
     override suspend fun signIn(email: String, password: String): AuthResult {
         return try {
             auth.signInWithEmailAndPassword(email, password)

@@ -80,4 +80,12 @@ dependencies {
     // Constraint Layout
     implementation(libs.androidx.constraintlayout.compose)
 
+    // Moshi
+    implementation(libs.moshi)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converterMoshi)
+    implementation(libs.logging.interceptor)
+
 }

@@ -29,17 +29,10 @@ fun FilterBottomSheet(
 ) {
     var selectedSetter by remember { mutableStateOf(currentFilter.routeSetter ?: "Alle") }
     val allSetters = listOf("Jens Grimm", "Jörg Schwerdt", "Jörg Band")
-    var selectedColor by remember { mutableStateOf(currentFilter.holdColor ?: HoldColor.BLUE) }
     var selectedDifficulty by remember { mutableStateOf(currentFilter.difficulty ?: Difficulty.YELLOW) }
 
 
     Column(Modifier.padding(16.dp)) {
-        DropdownSelector(
-            label = "Farbe",
-            options = HoldColor.values().toList(),
-            selected = selectedColor,
-            onSelected = { selectedColor = it }
-        )
 
         DropdownSelector(
             label = "Schwierigkeit",
@@ -66,7 +59,6 @@ fun FilterBottomSheet(
                 onClick = {
                 onFilterChanged(
                     RouteFilter(
-                        holdColor = selectedColor,
                         difficulty = selectedDifficulty,
                         routeSetter = if (selectedSetter == "Alle") null else selectedSetter
                     )

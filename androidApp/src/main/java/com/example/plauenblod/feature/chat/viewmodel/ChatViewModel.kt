@@ -1,11 +1,14 @@
 package com.example.plauenblod.feature.chat.viewmodel
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateMapOf
 import com.example.plauenblod.feature.chat.model.Chat
+import com.example.plauenblod.feature.chat.model.ChatWithUser
 import com.example.plauenblod.feature.chat.model.Message
 import com.example.plauenblod.feature.chat.repository.ChatRepository
 import com.example.plauenblod.feature.route.model.Route
 import com.example.plauenblod.feature.route.repository.RouteRepository
+import com.example.plauenblod.feature.user.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,10 +19,14 @@ import kotlinx.coroutines.launch
 class ChatViewModel(
     private val chatRepository: ChatRepository,
     private val routeRepository: RouteRepository,
+    private val userRepository: UserRepository,
     private val coroutineScope: CoroutineScope
 ) {
     private val _chat = MutableStateFlow<Chat?>(null)
     val chat: StateFlow<Chat?> = _chat.asStateFlow()
+
+    private val _chatList = MutableStateFlow<List<ChatWithUser>>(emptyList())
+    val chatList: StateFlow<List<ChatWithUser>> = _chatList.asStateFlow()
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
@@ -56,6 +63,31 @@ class ChatViewModel(
                         }
                     }
             }
+        }
+    }
+
+    fun loadChatsForCurrentUser(currentUserId: String) {
+        Log.d("ChatViewModel", "Lade Chats für User: $currentUserId")
+
+        coroutineScope.launch {
+            val chats = chatRepository.getChatsForUser(currentUserId)
+            Log.d("ChatViewModel", "Anzahl geladener Chats: ${chats.size}")
+
+            val chatWithUserList = chats.mapNotNull { chat ->
+                val otherUserId = chat.participantIds.firstOrNull { it != currentUserId }
+                Log.d("ChatViewModel", "→ Chat: ${chat.id}, Teilnehmer: ${chat.participantIds}, anderer User: $otherUserId")
+
+                val otherUser = otherUserId?.let {
+                    userRepository.getUserById(it).getOrNull().also { user ->
+                        Log.d("ChatViewModel", "  ↳ User geladen: ${user?.userName ?: "null"}")
+                    }
+                }
+
+                if (otherUser != null) ChatWithUser(chat, otherUser) else null
+            }
+
+            Log.d("ChatViewModel", "ChatWithUser-Liste enthält ${chatWithUserList.size} Einträge")
+            _chatList.value = chatWithUserList
         }
     }
 
