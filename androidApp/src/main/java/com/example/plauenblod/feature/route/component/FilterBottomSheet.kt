@@ -15,8 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.plauenblod.component.routes.createRoute.DropdownSelector
-import com.example.plauenblod.extension.toColor
+import com.example.plauenblod.feature.route.component.createRoute.DropdownSelector
 import com.example.plauenblod.feature.route.model.RouteFilter
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
 import com.example.plauenblod.feature.route.model.routeProperty.HoldColor

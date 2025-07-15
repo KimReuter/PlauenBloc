@@ -11,6 +11,9 @@ import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import com.example.plauenblod.feature.chat.repository.ChatRepository
 import com.example.plauenblod.feature.chat.repository.FirebaseChatRepository
 import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
+import com.example.plauenblod.feature.communityPost.repository.PinBoardRepository
+import com.example.plauenblod.feature.communityPost.repository.PinBoardRepositoryImpl
+import com.example.plauenblod.feature.communityPost.viewModel.PinboardViewModel
 import com.example.plauenblod.feature.imageUpload.repository.CloudinaryRepository
 import com.example.plauenblod.feature.imageUpload.repository.CloudinaryRepositoryImpl
 import com.example.plauenblod.feature.imageUpload.viewModel.ImageUploadViewModel
@@ -41,6 +44,8 @@ val appModule = module {
 
     single<CloudinaryRepository> { CloudinaryRepositoryImpl(get(), get()) }
 
+    single<PinBoardRepository> { PinBoardRepositoryImpl() }
+
     single { AuthViewModel(get(), get()) }
 
     single { RouteViewModel(get(), get()) }
@@ -52,6 +57,8 @@ val appModule = module {
     single { ChatViewModel(get(), get(), get(), get()) }
 
     single { ImageUploadViewModel(get()) }
+
+    single { PinboardViewModel(get(), get()) }
 
     single { createCloudinaryApi() }
 

@@ -5,7 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.example.plauenblod.screen.AuthScreen
+import com.example.plauenblod.feature.authentication.screen.AuthScreen
 import com.example.plauenblod.screen.AppStart
 import com.example.plauenblod.screen.SplashScreen
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel

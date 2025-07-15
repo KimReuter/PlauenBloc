@@ -1,5 +1,7 @@
 package com.example.plauenblod.feature.chat.model
 
+import com.example.plauenblod.android.util.FirestoreInstant
+
 data class Message(
     val id: String? = null,
     val chatId: String? = null,
@@ -7,6 +9,6 @@ data class Message(
     val recipientId: String? = null,
     val messageText: String? = null,
     val reactions: Map<String, String> = emptyMap(),
-    val timeStamp: Long = System.currentTimeMillis(),
+    val timeStamp: FirestoreInstant? = null,
     val routeId: String? = null
 )

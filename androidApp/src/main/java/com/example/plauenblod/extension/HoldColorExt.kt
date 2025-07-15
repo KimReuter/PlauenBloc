@@ -16,3 +16,17 @@ fun HoldColor.toColor(): Color = when (this) {
     HoldColor.TURQUOISE -> Color(0xFF40E0D0)
     HoldColor.GREY -> Color(0xFF9E9E9E)
 }
+
+fun HoldColor.toUserFriendlyName(): String = when (this) {
+    HoldColor.WHITE -> "Weiß"
+    HoldColor.PINK -> "Rosa"
+    HoldColor.YELLOW -> "Geld"
+    HoldColor.BLUE -> "Blau"
+    HoldColor.GREEN -> "Grün"
+    HoldColor.RED -> "Rot"
+    HoldColor.BROWN -> "Braun"
+    HoldColor.PURPLE -> "Lila"
+    HoldColor.BLACK -> "Schwarz"
+    HoldColor.TURQUOISE -> "Türkis"
+    HoldColor.GREY -> "Grau"
+}

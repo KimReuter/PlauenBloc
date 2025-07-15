@@ -24,10 +24,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.plauenblod.component.navigation.TabItem
+import com.example.plauenblod.feature.navigation.TabItem
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
+import com.example.plauenblod.feature.authentication.screen.AuthScreen
 import com.example.plauenblod.feature.chat.screen.ChatScreen
+import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
 import com.example.plauenblod.feature.community.screen.CommunityScreen
+import com.example.plauenblod.feature.communityPost.viewModel.PinboardViewModel
+import com.example.plauenblod.feature.route.screen.RouteDetailScreen
+import com.example.plauenblod.feature.route.screen.RouteScreen
 import com.example.plauenblod.feature.user.screen.OwnProfileScreen
 import com.example.plauenblod.feature.user.screen.UserProfileScreen
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
@@ -73,7 +78,9 @@ data class ChatRoute(
 fun AppStart(
     selectedTab: MutableState<TabItem> = rememberSaveable { mutableStateOf(TabItem.HOME) },
     userViewModel: UserViewModel = koinInject(),
-    authViewModel: AuthViewModel = koinInject()
+    authViewModel: AuthViewModel = koinInject(),
+    chatViewModel: ChatViewModel = koinInject(),
+    pinboardViewModel: PinboardViewModel = koinInject()
 ) {
     val navController = rememberNavController()
 
@@ -227,6 +234,7 @@ fun AppStart(
             composable<CommunityRoute> {
                 CommunityScreen(
                     userViewModel = userViewModel,
+                    chatViewModel = chatViewModel,
                     onUserClick = { user ->
                         navController.navigate(UserProfileRoute(
                             userId = user.uid ?: ""

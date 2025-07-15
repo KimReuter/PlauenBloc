@@ -1,6 +1,7 @@
 package com.example.plauenblod.feature.route.model.util
 
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 
 fun calculatePoints(difficulty: Difficulty, isFlash: Boolean = false): Int {
     val basePoints = when (difficulty) {

@@ -2,6 +2,8 @@ package com.example.plauenblod.extension
 
 import androidx.compose.ui.graphics.Color
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
+
 
 fun Difficulty.toColor(): Color = when (this) {
     Difficulty.PINK -> Color(0xFFFFC0CB)
@@ -16,7 +18,7 @@ fun Difficulty.toColor(): Color = when (this) {
 fun Difficulty.toUserFriendlyName(): String = when (this) {
     Difficulty.WHITE -> "Weiß"
     Difficulty.PINK -> "Rosa"
-    Difficulty.YELLOW -> "Geld"
+    Difficulty.YELLOW -> "Gelb"
     Difficulty.BLUE -> "Blau"
     Difficulty.GREEN -> "Grün"
     Difficulty.RED -> "Rot"

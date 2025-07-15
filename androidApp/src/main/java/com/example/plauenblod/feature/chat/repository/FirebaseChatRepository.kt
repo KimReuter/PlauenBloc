@@ -1,15 +1,19 @@
 package com.example.plauenblod.feature.chat.repository
 
 import android.util.Log
+import com.example.plauenblod.android.util.FirestoreInstant
 import com.example.plauenblod.feature.chat.model.Chat
 import com.example.plauenblod.feature.chat.model.Message
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.channels.onFailure
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 class FirebaseChatRepository(
 
@@ -49,12 +53,13 @@ class FirebaseChatRepository(
             }
 
             val chatDoc = chatsRef.document()
-            val now: Long = System.currentTimeMillis()
+            val now = Clock.System.now()
+            val nowFirestore = FirestoreInstant.fromInstant(now)
 
             val newChatData = mapOf(
                 "participantIds" to listOf(user1, user2),
                 "lastMessage" to "",
-                "lastTimeStamp" to now
+                "lastTimeStamp" to nowFirestore
             )
 
             chatDoc.set(newChatData).await()
@@ -62,7 +67,8 @@ class FirebaseChatRepository(
             val newChat = Chat(
                 id = chatDoc.id,
                 participantIds = listOf(user1, user2),
-                lastMessage = ""
+                lastMessage = "",
+                lastMessageTimestamp = nowFirestore
             )
 
             Log.d(TAG, "getOrCreateChat: Neuer Chat erstellt mit ID: ${chatDoc.id}")
@@ -85,7 +91,23 @@ class FirebaseChatRepository(
                 .await()
 
             snapshot.documents.mapNotNull { doc ->
-                doc.toObject(Chat::class.java)?.copy(id = doc.id)
+                val lastMessage = doc.getString("lastMessage") ?: ""
+                val fsInstantMap = doc.get("lastTimeStamp") as? Map<*, *>
+
+                val fsInstant = fsInstantMap?.let {
+                    val seconds = (it["seconds"] as? Number)?.toLong()
+                    val nanos = (it["nanoseconds"] as? Number)?.toInt()
+                    if (seconds != null && nanos != null) {
+                        FirestoreInstant(seconds, nanos)
+                    } else null
+                }
+
+                Chat(
+                    id = doc.id,
+                    participantIds = doc.get("participantIds") as? List<String> ?: emptyList(),
+                    lastMessage = lastMessage,
+                    lastMessageTimestamp = fsInstant
+                )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Fehler beim Abrufen der Chatliste: ${e.message}", e)
@@ -102,7 +124,7 @@ class FirebaseChatRepository(
             .orderBy("timeStamp", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
-                    Log.d(TAG, "observeMessages: Fehler beim Abrufen: ${error.message}")
+                    Log.e(TAG, "observeMessages: Fehler beim Abrufen: ${error.message}", error)
                     return@addSnapshotListener
                 }
 
@@ -111,13 +133,32 @@ class FirebaseChatRepository(
                     "observeMessages: Snapshot erhalten mit ${snapshot?.documents?.size} Nachrichten"
                 )
 
-                val messages = snapshot?.documents?.mapNotNull {
-                    val message = it.toObject(Message::class.java)?.copy(id = it.id)
-                    if (message == null) println("observeMessages: Nachricht konnte nicht gemappt werden.")
-                    message
+                val messages = snapshot?.documents?.mapNotNull { doc ->
+                    val data = doc.data ?: return@mapNotNull null
+                    val timeStampMap = data["timeStamp"] as? Map<*, *>
+                    val timeStamp = timeStampMap?.let {
+                        val seconds = (it["seconds"] as? Number)?.toLong()
+                        val nanoseconds = (it["nanoseconds"] as? Number)?.toInt()
+                        if (seconds != null && nanoseconds != null) {
+                            FirestoreInstant(seconds, nanoseconds)
+                        } else null
+                    }
+
+                    Message(
+                        id = doc.id,
+                        chatId = data["chatId"] as? String ?: "",
+                        senderId = data["senderId"] as? String ?: "",
+                        recipientId = data["recipientId"] as? String ?: "",
+                        messageText = data["messageText"] as? String ?: "",
+                        timeStamp = timeStamp,
+                        routeId = data["routeId"] as? String,
+                        reactions = data["reactions"] as? Map<String, String> ?: emptyMap()
+                    )
                 }
 
-                trySend(messages ?: emptyList())
+                trySend(messages ?: emptyList()).onFailure {
+                    Log.e(TAG, "observeMessages: Fehler beim Senden der Nachrichten", it)
+                }
             }
 
         awaitClose {
@@ -130,7 +171,8 @@ class FirebaseChatRepository(
         Log.d(TAG, "sendMessage: Sende Nachricht '$messageText' von $senderId in Chat $chatId")
 
         val messagesRef = db.collection("chats").document(chatId).collection("messages")
-        val now: Long = System.currentTimeMillis()
+        val now = Clock.System.now()
+        val fsInstant = FirestoreInstant.fromInstant(now)
 
         val newMessageRef = messagesRef.document()
         val newMessage = Message(
@@ -139,7 +181,7 @@ class FirebaseChatRepository(
             recipientId = recipientId,
             messageText = messageText,
             chatId = chatId,
-            timeStamp = now,
+            timeStamp = fsInstant,
             routeId = routeId
         )
 
@@ -149,7 +191,7 @@ class FirebaseChatRepository(
         db.collection("chats").document(chatId).update(
             mapOf(
                 "lastMessage" to messageText,
-                "lastTimeStamp" to now
+                "lastTimeStamp" to fsInstant
             )
         ).await()
         Log.d(TAG, "sendMessage: Chat-Dokument geupdatet")
@@ -195,7 +237,7 @@ class FirebaseChatRepository(
                 .document(chatId)
                 .collection("messages")
                 .document(messageId)
-                .update("content", newContent)
+                .update("messageText", newContent)
                 .await()
             Result.success(Unit)
         } catch (e: Exception) {

@@ -2,6 +2,7 @@ package com.example.plauenblod.feature.routeReview.viewmodel
 
 import com.example.plauenblod.feature.auth.repository.AuthRepository
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import com.example.plauenblod.feature.routeReview.model.RouteReview
 import com.example.plauenblod.feature.routeReview.repository.RouteReviewRepository
 import com.example.plauenblod.feature.user.repository.UserRepository
