@@ -77,6 +77,8 @@ class UserViewModel(
                         println("✅ User erfolgreich geladen: $user")
                         _userState.value = user
                         _errorMessage.value = null
+                        _userName.value = user.userName
+                        _userProfileImageUrl.value = user.profileImageUrl
                         onResult(true)
                     },
                     onFailure = { throwable ->

@@ -1,13 +1,12 @@
 package com.example.plauenblod.feature.communityPost.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import com.example.plauenblod.feature.communityPost.model.CommunityPost
 import com.example.plauenblod.feature.communityPost.model.PostComment
 import com.example.plauenblod.feature.communityPost.repository.PinBoardRepository
-import com.example.plauenblod.feature.communityPost.repository.PinBoardRepositoryImpl
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -46,11 +45,13 @@ val currentUserId get() = authViewModel.userId.value
 
     fun createPost(post: CommunityPost) {
         viewModelScope.launch {
+            Log.d("PinboardVM", "🔥 createPost wird ausgeführt: $post")
             try {
                 repository.createPost(post)
                 loadPosts()
             } catch (e: Exception) {
                 _error.value = e.message
+                Log.e("PinboardVM", "Fehler beim createPost", e)
             }
         }
     }

@@ -118,6 +118,18 @@ fun PostCard(
 
             Text(text = post.content)
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            post.comments.forEach { comment ->
+                CommentCard(
+                    comment = comment,
+                    currentUserId = currentUserId,
+                    onEditClick = {  },
+                    onDeleteClick = { }
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
             Spacer(modifier = Modifier.height(12.dp))
 
             OutlinedButton(onClick = onCommentFieldToggle) {

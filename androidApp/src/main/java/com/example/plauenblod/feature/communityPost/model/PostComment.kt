@@ -1,11 +1,15 @@
 package com.example.plauenblod.feature.communityPost.model
 
 import com.example.plauenblod.android.util.FirestoreInstant
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.IgnoreExtraProperties
 
-data class PostComment(
-    val id: String = "",
-    val authorId: String,
-    val authorName: String,
-    val content: String,
-    val timestamp: FirestoreInstant
-)
+@IgnoreExtraProperties
+class PostComment {
+    @get: Exclude
+    var id: String = ""
+    var authorId: String = ""
+    var authorName: String = ""
+    var content: String = ""
+    var timestamp: FirestoreInstant = FirestoreInstant()
+}
