@@ -21,6 +21,8 @@ import com.example.plauenblod.feature.routeReview.viewmodel.RouteReviewViewModel
 import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
 import com.example.plauenblod.feature.routeCollection.repository.RouteCollectionRepository
 import com.example.plauenblod.feature.routeCollection.repository.RouteCollectionRepositoryImpl
+import com.example.plauenblod.feature.routeCollection.viewModel.RouteCollectionViewModel
+import com.example.plauenblod.feature.routeCollection.viewModel.RouteSelectionViewModel
 import com.example.plauenblod.feature.user.repository.FirebaseUserRepository
 import com.example.plauenblod.feature.user.repository.UserRepository
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
@@ -63,6 +65,10 @@ val appModule = module {
     single { ImageUploadViewModel(get()) }
 
     single { PinboardViewModel(get(), get()) }
+
+    single { RouteCollectionViewModel(get()) }
+
+    single { RouteSelectionViewModel(get()) }
 
     single { createCloudinaryApi() }
 

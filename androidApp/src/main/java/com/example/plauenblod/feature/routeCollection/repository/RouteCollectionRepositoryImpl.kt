@@ -1,5 +1,6 @@
 package com.example.plauenblod.feature.routeCollection.repository
 
+import android.util.Log
 import com.example.plauenblod.feature.routeCollection.model.RouteCollection
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
@@ -60,16 +61,24 @@ class RouteCollectionRepositoryImpl(
                 trySend(null)
                 return@addSnapshotListener
             }
-            val coll = snapshot.toObject<RouteCollection>()
-            trySend(coll?.copy(id = snapshot.id))
+            val collection = snapshot.toObject<RouteCollection>()
+            trySend(collection?.copy(id = snapshot.id))
         }
         awaitClose { listener.remove() }
     }
 
-    override suspend fun createCollection(collection: RouteCollection) {
-        collectionsRef
-            .add(collection.copy(id = ""))
-            .await()
+    override suspend fun createCollection(collection: RouteCollection): String {
+        try {
+            Log.d("RCRepo", "⏳ createCollection: sende an Firestore: $collection")
+            val docRef = collectionsRef
+                .add(collection.copy(id = ""))
+                .await()
+            Log.d("RCRepo", "✅ createCollection: erfolgreich mit id=${docRef.id}")
+            return docRef.id
+        } catch (e: Exception) {
+            Log.e("RCRepo", "❌ createCollection failed", e)
+            throw e
+        }
     }
 
     override suspend fun updateCollection(collection: RouteCollection) {

@@ -33,6 +33,10 @@ import com.example.plauenblod.feature.community.screen.CommunityScreen
 import com.example.plauenblod.feature.communityPost.viewModel.PinboardViewModel
 import com.example.plauenblod.feature.route.screen.RouteDetailScreen
 import com.example.plauenblod.feature.route.screen.RouteScreen
+import com.example.plauenblod.feature.routeCollection.screen.NewCollectionScreen
+import com.example.plauenblod.feature.routeCollection.screen.RouteCollectionsScreen
+import com.example.plauenblod.feature.routeCollection.viewModel.RouteCollectionViewModel
+import com.example.plauenblod.feature.routeCollection.viewModel.RouteSelectionViewModel
 import com.example.plauenblod.feature.user.screen.OwnProfileScreen
 import com.example.plauenblod.feature.user.screen.UserProfileScreen
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
@@ -50,6 +54,14 @@ object BoulderRoute
 
 @Serializable
 object CollectionRoute
+
+@Serializable
+object NewCollectionRoute
+
+@Serializable
+data class CollectionDetailRoute(
+    val collectionId: String
+)
 
 @Serializable
 object CommunityRoute
@@ -80,7 +92,9 @@ fun AppStart(
     userViewModel: UserViewModel = koinInject(),
     authViewModel: AuthViewModel = koinInject(),
     chatViewModel: ChatViewModel = koinInject(),
-    pinboardViewModel: PinboardViewModel = koinInject()
+    pinboardViewModel: PinboardViewModel = koinInject(),
+    routeSelectionViewModel: RouteSelectionViewModel = koinInject(),
+    routeCollectionViewModel: RouteCollectionViewModel = koinInject()
 ) {
     val navController = rememberNavController()
 
@@ -138,7 +152,20 @@ fun AppStart(
             }
 
             composable<CollectionRoute> {
-                SettingsScreen()
+                RouteCollectionsScreen(
+                    navController = navController
+                )
+            }
+
+            composable<NewCollectionRoute> {
+                NewCollectionScreen(
+                    navController = navController
+                )
+            }
+
+            composable<CollectionDetailRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<CollectionDetailRoute>()
+                val collectionId = args.collectionId
             }
 
             composable<OwnProfileRoute> {
@@ -236,9 +263,11 @@ fun AppStart(
                     userViewModel = userViewModel,
                     chatViewModel = chatViewModel,
                     onUserClick = { user ->
-                        navController.navigate(UserProfileRoute(
-                            userId = user.uid ?: ""
-                        ))
+                        navController.navigate(
+                            UserProfileRoute(
+                                userId = user.uid ?: ""
+                            )
+                        )
                     },
                     navController = navController
                 )

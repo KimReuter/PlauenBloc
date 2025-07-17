@@ -1,23 +1,20 @@
 package com.example.plauenblod.feature.routeCollection.viewModel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.plauenblod.android.util.FirestoreInstant
 import com.example.plauenblod.feature.routeCollection.model.RouteCollection
 import com.example.plauenblod.feature.routeCollection.repository.RouteCollectionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
-/**
- * ViewModel für das Management von Route-Sammlungen.
- */
-class RouteCollectionViewModel : ViewModel(), KoinComponent {
-    private val repository: RouteCollectionRepository by inject()
+
+class RouteCollectionViewModel(
+    private val repository: RouteCollectionRepository
+) : ViewModel(){
 
     private val _publicCollections = MutableStateFlow<List<RouteCollection>>(emptyList())
     val publicCollections: StateFlow<List<RouteCollection>> = _publicCollections
@@ -33,6 +30,11 @@ class RouteCollectionViewModel : ViewModel(), KoinComponent {
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
+
+    private fun refreshLists(userId: String?) {
+        loadPublicCollections()
+        userId?.let { loadUserCollections(it) }
+    }
 
     fun loadPublicCollections() = viewModelScope.launch {
         _isLoading.value = true
@@ -76,44 +78,53 @@ class RouteCollectionViewModel : ViewModel(), KoinComponent {
     fun createCollection(
         creatorId: String,
         name: String,
-        description: String? = null,
-        categories: List<String> = emptyList(),
-        routeIds: List<String> = emptyList(),
-        isPublic: Boolean = true
+        description: String?,
+        routeIds: List<String>,
+        isPublic: Boolean
     ) = viewModelScope.launch {
+        _isLoading.value = true
         _error.value = null
         try {
-            val now: Instant = Clock.System.now()
-            val newCollection = RouteCollection(
-                id = "",
-                creatorId = creatorId,
-                name = name,
+            val now = Clock.System.now()
+            val newCol = RouteCollection(
+                creatorId   = creatorId,
+                name        = name,
                 description = description,
-                categories = categories,
-                routeIds = routeIds,
-                isPublic = isPublic,
-                createdAt = now,
-                updatedAt = now
+                isPublic    = isPublic,
+                routeIds    = routeIds,
+                createdAt   = FirestoreInstant.fromInstant(now),
+                updatedAt   = FirestoreInstant.fromInstant(now)
             )
-            repository.createCollection(newCollection)
-
-            loadUserCollections(creatorId)
+            Log.d("RCViewModel", "⏳ Creating: $newCol")
+            val newId = repository.createCollection(newCol)
+            Log.d("RCViewModel", "✅ Created collection with id=$newId")
+            loadCollection(newId)
+            refreshLists(creatorId)
         } catch (e: Exception) {
+            Log.e("RCViewModel", "❌ Fehler beim Erstellen:", e)
             _error.value = e.localizedMessage
+        } finally {
+            _isLoading.value = false
         }
     }
 
     fun updateCollection(collection: RouteCollection) = viewModelScope.launch {
+        _isLoading.value = true
         _error.value = null
         try {
             val updated = collection.copy(
-                updatedAt = Clock.System.now()
+                updatedAt = FirestoreInstant.fromInstant(Clock.System.now())
             )
             repository.updateCollection(updated)
 
-            loadCollection(updated.id)
+            _selectedCollection.value = updated
+
+            refreshLists(updated.creatorId)
+
         } catch (e: Exception) {
-            _error.value = e.localizedMessage
+            _error.value = e.message
+        } finally {
+            _isLoading.value = false
         }
     }
 

@@ -8,7 +8,7 @@ interface RouteCollectionRepository {
     fun getUserCollections(userId: String): Flow<List<RouteCollection>>
     fun getCollectionById(collectionId: String): Flow<RouteCollection?>
 
-    suspend fun createCollection(collection: RouteCollection)
+    suspend fun createCollection(collection: RouteCollection): String
     suspend fun updateCollection(collection: RouteCollection)
     suspend fun deleteCollection(collectionId: String)
 }
