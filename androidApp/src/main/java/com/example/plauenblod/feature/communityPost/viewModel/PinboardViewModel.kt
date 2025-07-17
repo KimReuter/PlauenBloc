@@ -23,6 +23,8 @@ val currentUserId get() = authViewModel.userId.value
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val userReactions = mutableMapOf<String, String>()
+
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
@@ -137,6 +139,28 @@ val currentUserId get() = authViewModel.userId.value
 
     fun deleteCommentIfAuthorized(postId: String, comment: PostComment) {
         if (!canEditComment(comment)) return
+        Log.d("PinboardVM", "🗑️ Deleting comment ${comment.id} of post $postId")
         deleteComment(postId, comment.id)
+    }
+
+    fun toggleReaction(postId: String, emoji: String) {
+        viewModelScope.launch {
+            try {
+                val previous = userReactions[postId]
+                if (previous == emoji) {
+                    repository.removeReaction(postId, emoji)
+                    userReactions.remove(postId)
+                } else {
+                    if (previous != null) {
+                        repository.removeReaction(postId, previous)
+                    }
+                    repository.addReaction(postId, emoji)
+                    userReactions[postId] = emoji
+                }
+                loadPosts()
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
     }
 }

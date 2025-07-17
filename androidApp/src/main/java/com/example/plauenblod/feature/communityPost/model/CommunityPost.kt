@@ -11,7 +11,11 @@ data class CommunityPost(
     var authorImageUrl: String?  = null,
     var content: String          = "",
     var timestamp: FirestoreInstant = FirestoreInstant(),
-    var comments: List<PostComment> = emptyList()
+    var comments: List<PostComment> = emptyList(),
+    var reactions: Map<String, Int> = emptyMap(),
+    var likeCount: Int = 0,
+    var repostCount: Int = 0,
+    var commentCount: Int = 0
 ) {
     constructor() : this("", "", "", null, "", FirestoreInstant(), emptyList())
 }

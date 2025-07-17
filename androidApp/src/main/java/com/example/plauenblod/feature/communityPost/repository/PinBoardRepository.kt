@@ -12,4 +12,6 @@ interface PinBoardRepository {
     suspend fun addComment(postId: String, comment: PostComment)
     suspend fun updateComment(postId: String, commentId: String, newContent: String)
     suspend fun deleteComment(postId: String, commentId: String)
+    suspend fun addReaction(postId: String, emoji: String)
+    suspend fun removeReaction(postId: String, emoji: String)
 }

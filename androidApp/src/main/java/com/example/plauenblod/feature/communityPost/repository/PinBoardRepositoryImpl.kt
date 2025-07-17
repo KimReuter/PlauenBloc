@@ -1,5 +1,6 @@
 package com.example.plauenblod.feature.communityPost.repository
 
+import android.util.Log
 import com.example.plauenblod.feature.communityPost.model.CommunityPost
 import com.example.plauenblod.feature.communityPost.model.PostComment
 import com.google.firebase.Firebase
@@ -22,6 +23,7 @@ class PinBoardRepositoryImpl(
         val listener = postsCollection
             .orderBy("timestamp")
             .addSnapshotListener { snapshot, error ->
+                Log.d("PinBoardRepo", "⚡️ onSnapshot: ${snapshot?.documents?.size} posts")
                 if (error != null || snapshot == null) {
                     trySend(emptyList())
                     return@addSnapshotListener
@@ -30,13 +32,7 @@ class PinBoardRepositoryImpl(
                 val posts = snapshot.documents.mapNotNull { doc ->
                     val post = doc.toObject(CommunityPost::class.java) ?: return@mapNotNull null
                     post.id = doc.id
-
-                    post.comments.forEachIndexed { index, comment ->
-                        if (comment.id.isEmpty()) {
-                            comment.id = UUID.randomUUID().toString()
-                        }
-                    }
-
+                    Log.d("PinBoardRepo", "→ Post ${post.id}: authorName='${post.authorName}'")
                     post
                 }
                 trySend(posts)
@@ -82,6 +78,7 @@ class PinBoardRepositoryImpl(
                     id = c.id
                     authorId = c.authorId
                     authorName = c.authorName
+                    authorImageUrl = c.authorImageUrl
                     content = newContent
                     timestamp = c.timestamp
                 }
@@ -91,10 +88,25 @@ class PinBoardRepositoryImpl(
     }
 
     override suspend fun deleteComment(postId: String, commentId: String) {
+        Log.d("PinBoardRepo", "→ deleteComment: removing $commentId from post $postId")
         val postRef = db.collection("community_posts").document(postId)
         val snapshot = postRef.get().await()
         val post = snapshot.toObject(CommunityPost::class.java) ?: return
         val updatedComments = post.comments.filter { it.id != commentId }
         postRef.update("comments", updatedComments).await()
+    }
+
+    override suspend fun addReaction(postId: String, emoji: String) {
+        postsCollection
+            .document(postId)
+            .update("reactions.$emoji", FieldValue.increment(1))
+            .await()
+    }
+
+    override suspend fun removeReaction(postId: String, emoji: String) {
+        postsCollection
+            .document(postId)
+            .update("reactions.$emoji", FieldValue.increment(-1))
+            .await()
     }
 }

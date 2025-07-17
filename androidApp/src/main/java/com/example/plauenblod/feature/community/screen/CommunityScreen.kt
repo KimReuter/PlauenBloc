@@ -89,13 +89,17 @@ fun CommunityScreen(
     val pinboardPosts by pinBoardViewModel.posts.collectAsState()
     val postToEdit = remember { mutableStateOf<CommunityPost?>(null) }
     var postToDelete = remember { mutableStateOf<CommunityPost?>(null) }
-    val commentToEdit = remember { mutableStateOf<PostComment?>(null) }
     var editingPost by remember { mutableStateOf<CommunityPost?>(null) }
     var expandedPostIdForComment by remember { mutableStateOf<String?>(null) }
     var commentText by remember { mutableStateOf("") }
     var commentToDelete = remember { mutableStateOf<Pair<String, PostComment>?>(null) }
     var showCreateSheet by remember { mutableStateOf(false) }
     var newPostContent by remember { mutableStateOf("") }
+    val userState by userViewModel.userState.collectAsState()
+    val isUserLoaded = userState != null
+    var editingPostId       by remember { mutableStateOf<String?>(null) }
+    var editingCommentId    by remember { mutableStateOf<String?>(null) }
+    var editingCommentText  by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         userViewModel.loadAllUsers()
@@ -344,29 +348,74 @@ fun CommunityScreen(
                             }
                         } else {
                             items(pinboardPosts) { post ->
+
+                                val displayName = allUsers
+                                    .firstOrNull { it.uid == post.authorId }
+                                    ?.userName
+                                    ?: "Unbekannt"
+
+                                Log.d(
+                                    "CommunityScreen",
+                                    "📌 Displaying post ${post.id} with authorName='${post.authorName}'"
+                                )
                                 PostCard(
                                     post = post,
-                                    currentUserId = pinBoardViewModel.currentUserId ?: return@items,
+                                    currentUserId = pinBoardViewModel.currentUserId!!,
                                     isCommentFieldVisible = expandedPostIdForComment == post.id,
+                                    commentText = commentText,
                                     onCommentFieldToggle = {
                                         expandedPostIdForComment =
                                             if (expandedPostIdForComment == post.id) null else post.id
                                     },
+                                    onCommentTextChange = { commentText = it },
                                     onCommentSubmit = { comment ->
                                         val newComment = PostComment().apply {
-                                            authorId   = currentUserId!!
-                                            authorName = userViewModel.userName.value ?: "Unbekannt"
-                                            content    = comment
-                                            timestamp  = FirestoreInstant.fromInstant(Clock.System.now())
+                                            authorId = currentUserId!!
+                                            authorName = displayName
+                                            authorImageUrl = userViewModel.userProfileImageUrl.value
+                                            content = comment
+                                            timestamp =
+                                                FirestoreInstant.fromInstant(Clock.System.now())
                                         }
                                         pinBoardViewModel.addCommentToPost(post.id, newComment)
                                         commentText = ""
                                         expandedPostIdForComment = null
                                     },
-                                    commentText = commentText,
-                                    onCommentTextChange = { commentText = it },
-                                    onEditClick = { editingPost = it },
-                                    onDeleteClick = { postToDelete.value = it }
+                                    editingPostId = editingPostId,
+                                    editingCommentId = editingCommentId,
+                                    editingCommentText = editingCommentText,
+                                    onEditingCommentTextChange = { editingCommentText = it },
+                                    onCommentStartEdit = { pid, comment ->
+                                        editingPostId = pid
+                                        editingCommentId = comment.id
+                                        editingCommentText = comment.content
+                                    },
+                                    onCommentCancelEdit = {
+                                        editingPostId = null
+                                        editingCommentId = null
+                                        editingCommentText = ""
+                                    },
+                                    onCommentSaveEdit = { pid, comment, newText ->
+                                        pinBoardViewModel.updateCommentIfAuthorized(
+                                            postId = pid,
+                                            comment = comment,
+                                            newContent = newText
+                                        )
+                                        editingPostId = null
+                                        editingCommentId = null
+                                        editingCommentText = ""
+                                    },
+                                    onCommentDelete = { pid, comment ->
+                                        commentToDelete.value = pid to comment
+                                    },
+                                    onEditPost = { editingPost = it },
+                                    onDeletePost = { postToDelete.value = it },
+                                    onPostAuthorClick = { authorId ->
+                                        onUserClick(UserDto(uid = authorId, userName = null))
+                                    },
+                                    onCommentAuthorClick = { authorId ->
+                                        onUserClick(UserDto(uid = authorId, userName = null))
+                                    }
                                 )
                             }
                         }
@@ -375,7 +424,7 @@ fun CommunityScreen(
                 }
             }
         }
-        if (isPinboardSelected) {
+        if (isPinboardSelected && isUserLoaded) {
             FloatingActionButton(
                 onClick = { showCreateSheet = true },
                 modifier = Modifier
@@ -411,21 +460,6 @@ fun CommunityScreen(
             )
         }
 
-        commentToEdit.value?.let { comment ->
-            EditCommentSheet(
-                comment = comment,
-                onDismiss = { commentToEdit.value = null },
-                onSave = { updatedComment ->
-                    pinBoardViewModel.updateCommentIfAuthorized(
-                        postId = comment.id,
-                        comment = comment,
-                        newContent = updatedComment
-                    )
-                    commentToEdit.value = null
-                }
-            )
-        }
-
         commentToDelete.value?.let { comment ->
             ConfirmDeleteDialog(
                 message = "Willst du diesen Kommentar wirklich löschen?",
@@ -446,11 +480,11 @@ fun CommunityScreen(
                 onDismiss = { showCreateSheet = false },
                 onSave = { newContent ->
                     pinBoardViewModel.createPost(CommunityPost().apply {
-                        authorId      = currentUserId!!
-                        authorName    = userViewModel.userName.value ?: "Unbekannt"
+                        authorId = currentUserId!!
+                        authorName = userViewModel.userName.value ?: "Unbekannt"
                         authorImageUrl = userViewModel.userProfileImageUrl.value
-                        content       = newContent
-                        timestamp     = FirestoreInstant.fromInstant(Clock.System.now())
+                        content = newContent
+                        timestamp = FirestoreInstant.fromInstant(Clock.System.now())
                     })
                     showCreateSheet = false
                 }
