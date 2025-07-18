@@ -50,14 +50,14 @@ import com.example.plauenblod.feature.review.component.RouteActionButtons
 import com.example.plauenblod.feature.review.component.RouteDetailHeader
 import com.example.plauenblod.feature.review.component.RouteInformationSection
 import com.example.plauenblod.feature.routeReview.model.RouteReview
-import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
-import com.example.plauenblod.feature.chat.component.ShareRouteDialog
 import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
 import com.example.plauenblod.feature.routeReview.viewmodel.RouteReviewViewModel
 import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
+import com.example.plauenblod.feature.chat.component.ShareDialog
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
+import com.example.plauenblod.screen.ChatRoute
 import com.example.plauenblod.viewmodel.state.DialogState
 import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
@@ -410,18 +410,20 @@ fun RouteDetailScreen(
         }
 
         if (showShareDialog) {
-            ShareRouteDialog(
-                routeId = route.id,
-                allUsers = allUsers,
-                onSend = { message, routeId, recipientId ->
+            ShareDialog(
+                itemTypeName   = "Route",
+                itemId         = route.id,
+                allUsers       = allUsers,
+                defaultMessage = "Ich möchte dir diese Route empfehlen 🚀",
+                onDismiss      = { showShareDialog = false },
+                onSend         = { message, recipientId, itemId ->
                     chatViewModel.sendMessage(
-                        messageText = message,
-                        senderId = currentUserId,
+                        senderId    = currentUserId,
                         recipientId = recipientId,
-                        routeId = routeId
+                        messageText = "$message\n\nRoute: ${route.name}"
                     )
-                },
-                onDismiss = { showShareDialog = false }
+                    navController.navigate(ChatRoute(currentUserId, recipientId))
+                }
             )
         }
     }

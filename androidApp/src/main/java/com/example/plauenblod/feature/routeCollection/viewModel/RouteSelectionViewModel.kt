@@ -31,6 +31,10 @@ class RouteSelectionViewModel(
         _selectedRouteIds.value = current
     }
 
+    fun setSelection(ids: List<String>) {
+        _selectedRouteIds.value = ids.toSet()
+    }
+
     fun clearSelection() {
         _selectedRouteIds.value = emptySet()
     }

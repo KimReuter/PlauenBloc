@@ -4,17 +4,21 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.plauenblod.android.util.FirestoreInstant
+import com.example.plauenblod.android.util.toFirestoreInstant
 import com.example.plauenblod.feature.routeCollection.model.RouteCollection
 import com.example.plauenblod.feature.routeCollection.repository.RouteCollectionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 
 
 class RouteCollectionViewModel(
     private val repository: RouteCollectionRepository
-) : ViewModel(){
+) : ViewModel() {
 
     private val _publicCollections = MutableStateFlow<List<RouteCollection>>(emptyList())
     val publicCollections: StateFlow<List<RouteCollection>> = _publicCollections
@@ -36,34 +40,40 @@ class RouteCollectionViewModel(
         userId?.let { loadUserCollections(it) }
     }
 
-    fun loadPublicCollections() = viewModelScope.launch {
+    fun loadPublicCollections() {
         _isLoading.value = true
         _error.value = null
-        try {
-            val list = repository.getAllPublicCollections()
-            list.collect { collections ->
+
+        repository.getAllPublicCollections()
+            .onEach { collections ->
+                Log.d("RouteCollectionVM", "publicCollections arrived: ${collections.size} items")
                 _publicCollections.value = collections
+                if (_isLoading.value) _isLoading.value = false
             }
-        } catch (e: Exception) {
-            _error.value = e.localizedMessage
-        } finally {
-            _isLoading.value = false
-        }
+            .catch { e ->
+                Log.e("RouteCollectionVM", "loadPublicCollections failed", e)
+                _error.value = e.localizedMessage
+                _isLoading.value = false
+            }
+            .launchIn(viewModelScope)
     }
 
-    fun loadUserCollections(userId: String) = viewModelScope.launch {
+    fun loadUserCollections(userId: String) {
         _isLoading.value = true
         _error.value = null
-        try {
-            val list = repository.getUserCollections(userId)
-            list.collect { collections ->
+
+        repository.getUserCollections(userId)
+            .onEach { collections ->
+                Log.d("RouteCollectionVM", "userCollections arrived: ${collections.size}")
                 _userCollections.value = collections
+                if (_isLoading.value) _isLoading.value = false
             }
-        } catch (e: Exception) {
-            _error.value = e.localizedMessage
-        } finally {
-            _isLoading.value = false
-        }
+            .catch { e ->
+                Log.e("RouteCollectionVM", "loadUserCollections failed", e)
+                _error.value = e.localizedMessage
+                _isLoading.value = false
+            }
+            .launchIn(viewModelScope)
     }
 
     fun loadCollection(collectionId: String) {
@@ -87,13 +97,13 @@ class RouteCollectionViewModel(
         try {
             val now = Clock.System.now()
             val newCol = RouteCollection(
-                creatorId   = creatorId,
-                name        = name,
+                creatorId = creatorId,
+                name = name,
                 description = description,
-                isPublic    = isPublic,
-                routeIds    = routeIds,
-                createdAt   = FirestoreInstant.fromInstant(now),
-                updatedAt   = FirestoreInstant.fromInstant(now)
+                `public` = isPublic,
+                routeIds = routeIds,
+                createdAt = FirestoreInstant.fromInstant(now),
+                updatedAt = FirestoreInstant.fromInstant(now)
             )
             Log.d("RCViewModel", "⏳ Creating: $newCol")
             val newId = repository.createCollection(newCol)
@@ -125,6 +135,24 @@ class RouteCollectionViewModel(
             _error.value = e.message
         } finally {
             _isLoading.value = false
+        }
+    }
+
+    fun toggleDone(routeId: String, done: Boolean) = viewModelScope.launch {
+        _selectedCollection.value?.let { coll ->
+            val newDone = if (done)
+                (coll.doneRouteIds + routeId).distinct()
+            else
+                coll.doneRouteIds - routeId
+
+            val updated = coll.copy(
+                doneRouteIds = newDone,
+                updatedAt = Clock.System.now().toFirestoreInstant()
+            )
+
+            repository.updateCollection(updated)
+            _selectedCollection.value = updated
+            refreshLists(updated.creatorId)
         }
     }
 

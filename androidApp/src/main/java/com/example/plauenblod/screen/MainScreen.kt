@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +34,8 @@ import com.example.plauenblod.feature.community.screen.CommunityScreen
 import com.example.plauenblod.feature.communityPost.viewModel.PinboardViewModel
 import com.example.plauenblod.feature.route.screen.RouteDetailScreen
 import com.example.plauenblod.feature.route.screen.RouteScreen
-import com.example.plauenblod.feature.routeCollection.screen.NewCollectionScreen
+import com.example.plauenblod.feature.routeCollection.screen.CollectionDetailScreen
+import com.example.plauenblod.feature.routeCollection.screen.CollectionFormScreen
 import com.example.plauenblod.feature.routeCollection.screen.RouteCollectionsScreen
 import com.example.plauenblod.feature.routeCollection.viewModel.RouteCollectionViewModel
 import com.example.plauenblod.feature.routeCollection.viewModel.RouteSelectionViewModel
@@ -57,6 +59,11 @@ object CollectionRoute
 
 @Serializable
 object NewCollectionRoute
+
+@Serializable
+data class EditCollectionRoute(
+    val collectionId: String
+)
 
 @Serializable
 data class CollectionDetailRoute(
@@ -158,14 +165,38 @@ fun AppStart(
             }
 
             composable<NewCollectionRoute> {
-                NewCollectionScreen(
+                CollectionFormScreen(
+                    existing    = null,
+                    onSaveNew   = { creator, name, desc, routes, pub ->
+                        routeCollectionViewModel.createCollection(creator, name, desc, routes, pub)
+                    },
+                    onSaveUpdate = { /* leer */ },
                     navController = navController
                 )
             }
 
+            composable<EditCollectionRoute> { backStack ->
+                val id = backStack.toRoute<EditCollectionRoute>().collectionId
+                LaunchedEffect(id) { routeCollectionViewModel.loadCollection(id) }
+                val existing by routeCollectionViewModel.selectedCollection.collectAsState()
+                if (existing != null) {
+                    CollectionFormScreen(
+                        existing    = existing,
+                        onSaveNew   = { _,_,_,_,_ -> },
+                        onSaveUpdate = { updated ->
+                            routeCollectionViewModel.updateCollection(updated)
+                        },
+                        navController = navController
+                    )
+                }
+            }
+
             composable<CollectionDetailRoute> { backStackEntry ->
                 val args = backStackEntry.toRoute<CollectionDetailRoute>()
-                val collectionId = args.collectionId
+                CollectionDetailScreen(
+                    collectionId = args.collectionId,
+                    navController = navController
+                )
             }
 
             composable<OwnProfileRoute> {

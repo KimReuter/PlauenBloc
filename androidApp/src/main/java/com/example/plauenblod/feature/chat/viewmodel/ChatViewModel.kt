@@ -1,13 +1,14 @@
 package com.example.plauenblod.feature.chat.viewmodel
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateMapOf
 import com.example.plauenblod.feature.chat.model.Chat
 import com.example.plauenblod.feature.chat.model.ChatWithUser
 import com.example.plauenblod.feature.chat.model.Message
 import com.example.plauenblod.feature.chat.repository.ChatRepository
 import com.example.plauenblod.feature.route.model.Route
 import com.example.plauenblod.feature.route.repository.RouteRepository
+import com.example.plauenblod.feature.routeCollection.model.RouteCollection
+import com.example.plauenblod.feature.routeCollection.repository.RouteCollectionRepository
 import com.example.plauenblod.feature.user.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -15,10 +16,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 
 class ChatViewModel(
     private val chatRepository: ChatRepository,
     private val routeRepository: RouteRepository,
+    private val routeCollectionRepository: RouteCollectionRepository,
     private val userRepository: UserRepository,
     private val coroutineScope: CoroutineScope
 ) {
@@ -36,6 +39,11 @@ class ChatViewModel(
 
     private val _sharedRoutes = MutableStateFlow<Map<String, Route>>(emptyMap())
     val sharedRoutes: StateFlow<Map<String, Route>> = _sharedRoutes
+
+    private val _sharedCollections = MutableStateFlow<Map<String, RouteCollection>>(emptyMap())
+    val sharedCollections: StateFlow<Map<String, RouteCollection>> =
+        _sharedCollections.asStateFlow()
+
 
     private var messageJob: Job? = null
     private var currentUserId: String? = null
@@ -57,9 +65,8 @@ class ChatViewModel(
                         _messages.value = newMessages
 
                         newMessages.forEach { msg ->
-                            msg.routeId?.let { routeId ->
-                                loadRouteIfNeeded(routeId)
-                            }
+                            msg.routeId?.let { loadRouteIfNeeded(it) }
+                            msg.collectionId?.let { loadCollectionIfNeeded(it) }
                         }
                     }
             }
@@ -75,7 +82,10 @@ class ChatViewModel(
 
             val chatWithUserList = chats.mapNotNull { chat ->
                 val otherUserId = chat.participantIds.firstOrNull { it != currentUserId }
-                Log.d("ChatViewModel", "→ Chat: ${chat.id}, Teilnehmer: ${chat.participantIds}, anderer User: $otherUserId")
+                Log.d(
+                    "ChatViewModel",
+                    "→ Chat: ${chat.id}, Teilnehmer: ${chat.participantIds}, anderer User: $otherUserId"
+                )
 
                 val otherUser = otherUserId?.let {
                     userRepository.getUserById(it).getOrNull().also { user ->
@@ -91,7 +101,12 @@ class ChatViewModel(
         }
     }
 
-    fun sendMessage(messageText: String, senderId: String, recipientId: String, routeId: String? = null) {
+    fun sendMessage(
+        messageText: String,
+        senderId: String,
+        recipientId: String,
+        routeId: String? = null
+    ) {
         val chatId = _chat.value?.id ?: return
         println("SendMessage wird ausgeführt")
         coroutineScope.launch {
@@ -126,6 +141,22 @@ class ChatViewModel(
                     _sharedRoutes.value = _sharedRoutes.value + (routeId to it)
                     println("Route $routeId geladen: ${it.name}")
                 } ?: println("Route $routeId konnte nicht gefunden werden.")
+            }
+        }
+    }
+
+
+    fun loadCollectionIfNeeded(collectionId: String) {
+        if (!_sharedCollections.value.containsKey(collectionId)) {
+            coroutineScope.launch {
+                val coll = routeCollectionRepository
+                    .getCollectionById(collectionId)
+                    .first()
+                coll?.let {
+                    _sharedCollections.value =
+                        _sharedCollections.value + (collectionId to it)
+                    Log.d("ChatViewModel", "Sammlung $collectionId geladen: ${it.name}")
+                } ?: Log.w("ChatViewModel", "Sammlung $collectionId konnte nicht gefunden werden.")
             }
         }
     }

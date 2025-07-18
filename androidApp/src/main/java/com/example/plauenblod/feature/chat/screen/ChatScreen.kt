@@ -46,6 +46,7 @@ import com.example.plauenblod.feature.chat.model.Message
 import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
 import com.example.plauenblod.screen.BoulderDetailRoute
+import com.example.plauenblod.screen.CollectionDetailRoute
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -68,6 +69,7 @@ fun ChatScreen(
     var editMode by rememberSaveable { mutableStateOf(false) }
     var messageToEdit by rememberSaveable { mutableStateOf<Message?>(null) }
     val sharedRoutes by chatViewModel.sharedRoutes.collectAsState()
+    val sharedCollections by chatViewModel.sharedCollections.collectAsState()
 
     LaunchedEffect(targetUserId) {
         userViewModel.loadUser(targetUserId)
@@ -110,7 +112,9 @@ fun ChatScreen(
                     onRouteClick = { routeId ->
                         navController.navigate(BoulderDetailRoute(routeId))
                     } ,
-                    sharedRoutes = sharedRoutes
+                    onCollectionClick  = { navController.navigate(CollectionDetailRoute(it)) },
+                    sharedRoutes = sharedRoutes,
+                    sharedCollections  = sharedCollections,
                 )
 
                 ChatInput(

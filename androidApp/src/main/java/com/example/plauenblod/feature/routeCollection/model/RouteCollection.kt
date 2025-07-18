@@ -2,16 +2,21 @@ package com.example.plauenblod.feature.routeCollection.model
 
 import kotlinx.datetime.Clock
 import com.example.plauenblod.android.util.FirestoreInstant
+import com.google.firebase.firestore.PropertyName
 
 data class RouteCollection(
     val id: String = "",
     val creatorId: String,
     val name: String,
     val description: String? = null,
-    val isPublic: Boolean = true,
+
+    @get:PropertyName("public")
+    @set:PropertyName("public")
+    var `public`: Boolean = true,
+
     val routeIds: List<String> = emptyList(),
+    val doneRouteIds: List<String> = emptyList(),
     val order: List<String> = emptyList(),
-    val routeCount: Int = 0,
     val likesCount: Int = 0,
     val createdAt: FirestoreInstant = FirestoreInstant.fromInstant(Clock.System.now()),
     val updatedAt: FirestoreInstant = FirestoreInstant.fromInstant(Clock.System.now())
@@ -22,12 +27,14 @@ data class RouteCollection(
         creatorId    = "",
         name         = "",
         description  = null,
-        isPublic     = true,
+        `public`     = true,
         routeIds     = emptyList(),
         order        = emptyList(),
-        routeCount   = 0,
         likesCount   = 0,
         createdAt    = FirestoreInstant(0, 0),
         updatedAt    = FirestoreInstant(0, 0)
     )
+
+    val routeCount: Int
+        get() = routeIds.size
 }

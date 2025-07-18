@@ -20,10 +20,11 @@ class RouteCollectionRepositoryImpl(
 
     override fun getAllPublicCollections(): Flow<List<RouteCollection>> = callbackFlow {
         val listener = collectionsRef
-            .whereEqualTo("isPublic", true)
+            .whereEqualTo("public", true)
             .orderBy("updatedAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) {
+                    Log.w("RCRepo", "Firestore publicCollections listener error", error)
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
@@ -31,6 +32,7 @@ class RouteCollectionRepositoryImpl(
                     val coll = doc.toObject<RouteCollection>() ?: return@mapNotNull null
                     coll.copy(id = doc.id)
                 }
+                Log.d("RCRepo", "Firestore returned public collections: ${list.size}")
                 trySend(list)
             }
         awaitClose { listener.remove() }
@@ -42,6 +44,7 @@ class RouteCollectionRepositoryImpl(
             .orderBy("updatedAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) {
+                    Log.w("RCRepo", "Firestore userCollections listener error", error)
                     trySend(emptyList())
                     return@addSnapshotListener
                 }
@@ -49,6 +52,7 @@ class RouteCollectionRepositoryImpl(
                     val coll = doc.toObject<RouteCollection>() ?: return@mapNotNull null
                     coll.copy(id = doc.id)
                 }
+                Log.d("RCRepo", "Firestore returned user collections: ${list.size}")
                 trySend(list)
             }
         awaitClose { listener.remove() }

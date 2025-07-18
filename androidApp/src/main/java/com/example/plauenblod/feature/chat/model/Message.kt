@@ -10,5 +10,6 @@ data class Message(
     val messageText: String? = null,
     val reactions: Map<String, String> = emptyMap(),
     val timeStamp: FirestoreInstant? = null,
-    val routeId: String? = null
+    val routeId: String? = null,
+    val collectionId: String? = null,
 )

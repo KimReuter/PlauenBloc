@@ -43,3 +43,7 @@ fun FirestoreInstant.toRelativeTimeString(): String {
         }
     }
 }
+
+
+fun Instant.toFirestoreInstant(): FirestoreInstant =
+    FirestoreInstant.fromInstant(this)

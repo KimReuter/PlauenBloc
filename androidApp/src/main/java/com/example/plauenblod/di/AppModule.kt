@@ -60,7 +60,7 @@ val appModule = module {
 
     single { UserViewModel(get(), get(), get()) }
 
-    single { ChatViewModel(get(), get(), get(), get()) }
+    single { ChatViewModel(get(), get(), get(), get(), get()) }
 
     single { ImageUploadViewModel(get()) }
 

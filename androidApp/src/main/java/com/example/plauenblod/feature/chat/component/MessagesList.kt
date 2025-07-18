@@ -21,13 +21,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.plauenblod.feature.chat.model.Message
 import com.example.plauenblod.feature.route.model.Route
+import com.example.plauenblod.feature.routeCollection.model.RouteCollection
 
 @Composable
 fun MessagesList(
     messages: List<Message>,
     currentUserId: String,
     onRouteClick: (String) -> Unit,
+    onCollectionClick: (String) -> Unit,
     sharedRoutes: Map<String, Route>,
+    sharedCollections: Map<String, RouteCollection>,
     modifier: Modifier = Modifier,
     onLongClick: (Message) -> Unit,
     selectedMessage: Message?
@@ -55,7 +58,7 @@ fun MessagesList(
                     .padding(horizontal = 8.dp, vertical = 4.dp)
                     .fillMaxWidth()
                     .combinedClickable(
-                        onClick = { },
+                        onClick = { message.routeId?.let { onRouteClick(it) } },
                         onLongClick = { onLongClick(message) }
                     ),
                 contentAlignment = if (isOwnMessage) Alignment.CenterEnd else Alignment.CenterStart
@@ -69,31 +72,64 @@ fun MessagesList(
                     shape = RoundedCornerShape(12.dp),
                     tonalElevation = if (isSelected) 4.dp else 2.dp
                 ) {
-                    if (message.routeId != null) {
-                        val route = sharedRoutes[message.routeId]
-                        if (route != null) {
-                            RoutePreviewCard(
-                                route = route,
-                                onRouteClick = { onRouteClick(route.id) },
-                                sharedMessage = message.messageText
-                            )
-                        } else {
+                    when {
+                        message.routeId != null -> {
+                            val route = sharedRoutes[message.routeId]
+                            if (route != null) {
+                                SharedPreviewCard(
+                                    title         = route.name,
+                                    details       = listOf(
+                                        "Schwierigkeit: ${route.difficulty}",
+                                        "Erstellt von: ${route.setter}"
+                                    ),
+                                    stats         = emptyList(),
+                                    sharedMessage = message.messageText,
+                                    onClick       = { onRouteClick(route.id) }
+                                )
+                            } else {
+                                Text(
+                                    text = "⏳ Route wird geladen...",
+                                    modifier = Modifier
+                                        .padding(12.dp)
+                                        .widthIn(max = 280.dp)
+                                )
+                            }
+                        }
+
+                        message.collectionId != null -> {
+                            val collection = sharedCollections[message.collectionId]
+                            if (collection != null) {
+                                SharedPreviewCard(
+                                    title         = collection.name,
+                                    details       = listOfNotNull(collection.description),
+                                    stats         = listOf(
+                                        "Routen" to collection.routeCount.toString(),
+                                        "Likes"  to collection.likesCount.toString()
+                                    ),
+                                    sharedMessage = message.messageText,
+                                    onClick       = { onCollectionClick(collection.id) }
+                                )
+                            } else {
+                                Text(
+                                    text = "⏳ Sammlung wird geladen…",
+                                    modifier = Modifier
+                                        .padding(12.dp)
+                                        .widthIn(max = 280.dp)
+                                    )
+                            }
+                        }
+
+                        else -> {
                             Text(
-                                text = "⏳ Route wird geladen...",
+                                text = message.messageText.orEmpty(),
                                 modifier = Modifier
                                     .padding(12.dp)
-                                    .widthIn(max = 280.dp)
+                                    .widthIn(max = 280.dp),
+                                color = if (isOwnMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
                             )
                         }
-                    } else {
-                        Text(
-                            text = message.messageText.orEmpty(),
-                            modifier = Modifier
-                                .padding(12.dp)
-                                .widthIn(max = 280.dp),
-                            color = if (isOwnMessage) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-                        )
                     }
+
                 }
 
 
