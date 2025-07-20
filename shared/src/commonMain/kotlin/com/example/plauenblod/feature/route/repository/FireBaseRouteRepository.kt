@@ -2,8 +2,8 @@ package com.example.plauenblod.feature.route.repository
 
 import com.example.plauenblod.feature.route.model.Route
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
-import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import com.example.plauenblod.feature.route.model.routeProperty.HallSection
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import com.example.plauenblod.feature.route.model.routeProperty.Sector
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.firestore

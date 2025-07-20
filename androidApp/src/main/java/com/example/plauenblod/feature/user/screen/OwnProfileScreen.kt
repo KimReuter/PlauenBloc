@@ -28,17 +28,21 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import android.net.Uri
 import android.util.Log
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import com.example.plauenblod.android.R
 import com.example.plauenblod.extension.toUserFriendlyName
 import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import com.example.plauenblod.feature.imageUpload.model.ImageUploadState
+import com.example.plauenblod.feature.user.component.CompletedRouteCard
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
+import com.example.plauenblod.screen.BoulderDetailRoute
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +51,8 @@ fun OwnProfileScreen(
     userViewmodel: UserViewModel = koinInject(),
     authViewModel: AuthViewModel = koinInject(),
     onImageUpload: (Uri) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    navController: NavController
 ) {
     val userState by userViewmodel.userState.collectAsState()
     val currentUser = userState ?: return
@@ -58,7 +63,8 @@ fun OwnProfileScreen(
     var isEditingBio by rememberSaveable { mutableStateOf(false) }
     var bioText by rememberSaveable { mutableStateOf(currentUser.bio ?: "") }
     var showAllRoutes by rememberSaveable { mutableStateOf(false) }
-    val routesToDisplay = if (showAllRoutes) currentUser.completedRoutes else currentUser.completedRoutes.take(3)
+    val routesToDisplay =
+        if (showAllRoutes) currentUser.completedRoutes else currentUser.completedRoutes.take(3)
     val scrollState = rememberScrollState()
     val uploadState = userViewmodel.uploadState
     var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
@@ -153,7 +159,11 @@ fun OwnProfileScreen(
                     )
                     IconButton(onClick = {
                         currentUser.uid?.let { uid ->
-                            userViewmodel.updateUserInfo(uid = uid, newName = nameText, newBio = currentUser.bio ?: "")
+                            userViewmodel.updateUserInfo(
+                                uid = uid,
+                                newName = nameText,
+                                newBio = currentUser.bio ?: ""
+                            )
                         }
                         isEditingName = false
                     }) {
@@ -211,7 +221,11 @@ fun OwnProfileScreen(
                     ) {
                         IconButton(onClick = {
                             currentUser.uid?.let { uid ->
-                                userViewmodel.updateUserInfo(uid = uid, newName = currentUser.userName ?: "", newBio = bioText)
+                                userViewmodel.updateUserInfo(
+                                    uid = uid,
+                                    newName = currentUser.userName ?: "",
+                                    newBio = bioText
+                                )
                             }
                             isEditingBio = false
                         }) {
@@ -263,43 +277,35 @@ fun OwnProfileScreen(
             Spacer(Modifier.height(12.dp))
 
             if (currentUser.completedRoutes.isNotEmpty()) {
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateContentSize(),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        routesToDisplay.forEach { route ->
-                            Column(
-                                modifier = Modifier
-                                    .padding(vertical = 8.dp)
-                                    .fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = "🧩 ${route.routeName ?: "Unbekannt"}",
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                                Text(
-                                    text = "• ${route.attempts ?: "?"} Versuche, am ${route.date ?: "-"}\n• Schwierigkeit: ${route.difficulty?.toUserFriendlyName() ?: "?"}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
 
-                        if (currentUser.completedRoutes.size > 3) {
-                            Text(
-                                text = if (showAllRoutes) "Weniger anzeigen ▲" else "Alle anzeigen ▼",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier
-                                    .padding(top = 12.dp)
-                                    .align(Alignment.End)
-                                    .clickable { showAllRoutes = !showAllRoutes }
-                            )
-                        }
+                Row(
+                    modifier = Modifier
+                        .horizontalScroll(rememberScrollState())
+                        .padding(start = 16.dp)
+                ) {
+                    routesToDisplay.forEachIndexed { index, route ->
+                        CompletedRouteCard(
+                            routeName = route.routeName ?: "Unbekannt",
+                            attempts = route.attempts,
+                            difficulty = route.difficulty,
+                            routeNumber = route.number,
+                            onClick = {
+                                navController.navigate(BoulderDetailRoute(route.routeId!!))
+                            }
+                        )
                     }
+                }
+
+                if (currentUser.completedRoutes.size > 3) {
+                    Text(
+                        text = if (showAllRoutes) "Weniger anzeigen ▲" else "Alle anzeigen ▼",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .padding(top = 12.dp, end = 16.dp)
+                            .fillMaxWidth()
+                            .clickable { showAllRoutes = !showAllRoutes }
+                    )
                 }
             } else {
                 Text(

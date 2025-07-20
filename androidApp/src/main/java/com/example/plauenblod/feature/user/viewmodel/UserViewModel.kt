@@ -145,13 +145,14 @@ class UserViewModel(
     fun tickRoute(
         userId: String,
         route: Route,
+        number: Int,
         attempts: Int,
         isFlash: Boolean,
         onResult: (Boolean) -> Unit
     ) {
         println("✅ tickRoute wird ausgeführt")
         coroutineScope.launch {
-            val result = userRepository.tickRoute(userId, route, attempts, isFlash)
+            val result = userRepository.tickRoute(userId, route, number, attempts, isFlash)
             result.fold(
                 onSuccess = {
                     println("✅ Tick erfolgreich")

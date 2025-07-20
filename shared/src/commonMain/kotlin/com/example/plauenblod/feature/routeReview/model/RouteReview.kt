@@ -1,7 +1,6 @@
 package com.example.plauenblod.feature.routeReview.model
 
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
-import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable

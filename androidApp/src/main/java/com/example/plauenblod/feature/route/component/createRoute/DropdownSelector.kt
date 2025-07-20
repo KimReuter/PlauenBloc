@@ -24,7 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.unit.dp
-import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
+import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
 import com.example.plauenblod.model.LabeledEnum
 import com.example.plauenblod.extension.toColor
 
@@ -62,8 +62,8 @@ fun <T> DropdownSelector(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     val selectedColor = when(selected) {
-                        is HoldColor -> selected.toColor()
-                        is HoldColor -> selected.toColor()
+                        is Difficulty -> selected.toColor()
+                        is Difficulty -> selected.toColor()
                         else -> null
                     }
                     if (selectedColor != null) {
@@ -88,8 +88,8 @@ fun <T> DropdownSelector(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 val optionColor = when (option) {
-                                    is HoldColor -> option.toColor()
-                                    is HoldColor -> option.toColor()
+                                    is Difficulty -> option.toColor()
+                                    is Difficulty -> option.toColor()
                                     else -> null
                                 }
                                 if (optionColor != null) {

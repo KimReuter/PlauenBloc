@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import com.example.plauenblod.feature.route.component.createRoute.DropdownSelector
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
 import com.example.plauenblod.feature.routeReview.model.RouteReview
-import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import kotlinx.datetime.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)

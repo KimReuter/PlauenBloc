@@ -71,6 +71,7 @@ class FirebaseUserRepository : UserRepository {
     override suspend fun tickRoute(
         userId: String,
         route: Route,
+        number: Int,
         attempts: Int,
         isFlash: Boolean
     ): Result<Unit> = runCatching {
@@ -93,6 +94,7 @@ class FirebaseUserRepository : UserRepository {
                 mapOf(
                     "routeId" to route.id,
                     "routeName" to route.name,
+                    "number" to route.number,
                     "attempts" to attempts,
                     "difficulty" to route.difficulty,
                     "date" to System.currentTimeMillis().toString()

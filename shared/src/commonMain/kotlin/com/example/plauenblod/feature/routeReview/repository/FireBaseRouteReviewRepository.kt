@@ -1,7 +1,6 @@
 package com.example.plauenblod.feature.routeReview.repository
 
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
-import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import com.example.plauenblod.feature.routeReview.model.RouteReview
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.firestore.firestore

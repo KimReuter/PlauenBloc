@@ -219,7 +219,8 @@ fun AppStart(
                             navController.navigate(AuthRoute) {
                                 popUpTo(DashboardRoute) { inclusive = true }
                             }
-                        }
+                        },
+                        navController = navController
                     )
                 }
             }

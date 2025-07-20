@@ -17,24 +17,25 @@ data class RouteCollection(
     val routeIds: List<String> = emptyList(),
     val doneRouteIds: List<String> = emptyList(),
     val order: List<String> = emptyList(),
-    val likesCount: Int = 0,
+    val likedBy: List<String> = emptyList(),
+
     val createdAt: FirestoreInstant = FirestoreInstant.fromInstant(Clock.System.now()),
     val updatedAt: FirestoreInstant = FirestoreInstant.fromInstant(Clock.System.now())
 ) {
     @Suppress("unused")
     constructor() : this(
-        id           = "",
-        creatorId    = "",
-        name         = "",
-        description  = null,
-        `public`     = true,
-        routeIds     = emptyList(),
-        order        = emptyList(),
-        likesCount   = 0,
-        createdAt    = FirestoreInstant(0, 0),
-        updatedAt    = FirestoreInstant(0, 0)
+        id = "",
+        creatorId = "",
+        name = "",
+        description = null,
+        `public` = true,
+        routeIds = emptyList(),
+        order = emptyList(),
+        likedBy = emptyList(),
+        createdAt = FirestoreInstant(0, 0),
+        updatedAt = FirestoreInstant(0, 0)
     )
 
-    val routeCount: Int
-        get() = routeIds.size
+    val routeCount get() = routeIds.size
+    val likesCount get() = likedBy.size
 }

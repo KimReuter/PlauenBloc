@@ -333,6 +333,7 @@ fun RouteDetailScreen(
                                             userViewModel.tickRoute(
                                                 userId = currentUserId,
                                                 route = route,
+                                                number = route.number,
                                                 attempts = reviewWithUserId.attempts,
                                                 isFlash = (reviewWithUserId.attempts == 1)
                                             ) { tickSuccess ->

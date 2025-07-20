@@ -2,7 +2,6 @@ package com.example.plauenblod.extension
 
 import androidx.compose.ui.graphics.Color
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
-import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 
 
 fun Difficulty.toColor(): Color = when (this) {

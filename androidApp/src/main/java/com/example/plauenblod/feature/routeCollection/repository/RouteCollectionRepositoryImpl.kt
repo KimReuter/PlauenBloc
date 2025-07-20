@@ -98,4 +98,14 @@ class RouteCollectionRepositoryImpl(
             .delete()
             .await()
     }
+
+    override suspend fun toggleLike(collectionId: String, userId: String) {
+        val docRef = firestore.collection("route_collections").document(collectionId)
+        firestore.runTransaction { tx ->
+            val snapshot = tx.get(docRef)
+            val current = snapshot.get("likedBy") as? List<String> ?: emptyList()
+            val updated = if (current.contains(userId)) current - userId else current + userId
+            tx.update(docRef, "likedBy", updated)
+        }.await()
+    }
 }

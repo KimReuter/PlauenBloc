@@ -53,7 +53,7 @@ fun RouteInformationSection(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text("Grifffarbe:", style = MaterialTheme.typography.bodyMedium)
-            ColorDot(route.holdColor.toColor())
+            ColorDot(route.difficulty.toColor())
             Text("Schrauber: ${route.setter}", style = MaterialTheme.typography.bodyMedium)
         }
 

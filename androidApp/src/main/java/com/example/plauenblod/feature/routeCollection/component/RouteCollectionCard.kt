@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,7 +23,8 @@ fun RouteCollectionCard(
     onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
-    onShare: (message: String, recipientId: String, collectionId: String) -> Unit
+    onShare: (message: String, recipientId: String, collectionId: String) -> Unit,
+    onLike: (collectionId: String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     val isOwner = currentUserId == collection.creatorId
@@ -122,9 +125,24 @@ fun RouteCollectionCard(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Divider(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(text = "Routen: ${collection.routeCount}")
-                Text(text = "Likes: ${collection.likesCount}")
+                IconButton(onClick = { onLike(collection.id) }) {
+                    Icon(
+                        imageVector = if (collection.likedBy.contains(currentUserId))
+                            Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = "Like",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(text = "${collection.likesCount}")
             }
         }
     }

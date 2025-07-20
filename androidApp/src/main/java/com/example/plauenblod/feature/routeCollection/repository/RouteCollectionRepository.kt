@@ -11,4 +11,5 @@ interface RouteCollectionRepository {
     suspend fun createCollection(collection: RouteCollection): String
     suspend fun updateCollection(collection: RouteCollection)
     suspend fun deleteCollection(collectionId: String)
+    suspend fun toggleLike(collectionId: String, userId: String)
 }

@@ -18,6 +18,8 @@ import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Share
@@ -45,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import com.example.plauenblod.feature.routeCollection.viewModel.RouteCollectionViewModel
 import com.example.plauenblod.feature.routeCollection.viewModel.RouteSelectionViewModel
 import com.example.plauenblod.screen.BoulderDetailRoute
@@ -57,10 +60,16 @@ fun CollectionDetailScreen(
     collectionId: String,
     routeCollectionViewModel: RouteCollectionViewModel = koinInject(),
     routeSelectionViewModel: RouteSelectionViewModel = koinInject(),
+    authViewModel: AuthViewModel = koinInject(),
     navController: NavController
 ) {
+    val currentUserId by authViewModel.userId.collectAsState()
     val collection by routeCollectionViewModel.selectedCollection.collectAsState()
     val allRoutes by routeSelectionViewModel.allRoutes.collectAsState()
+    val isLiked = remember(collection, currentUserId) {
+        collection?.likedBy?.contains(currentUserId) == true
+    }
+
     var gridMode by remember { mutableStateOf(false) }
 
     LaunchedEffect(collectionId) {
@@ -77,6 +86,20 @@ fun CollectionDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(
+                        enabled = collection != null,
+                        onClick = {
+                            currentUserId?.let { uid ->
+                                routeCollectionViewModel.toggleLike(collectionId, uid)
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = if (isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isLiked) "Entliken" else "Liken",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                     IconButton(
                         enabled = collection != null,
                         onClick = {

@@ -138,6 +138,12 @@ class RouteCollectionViewModel(
         }
     }
 
+    fun toggleLike(collectionId: String, userId: String) {
+        viewModelScope.launch {
+            repository.toggleLike(collectionId, userId)
+        }
+    }
+
     fun toggleDone(routeId: String, done: Boolean) = viewModelScope.launch {
         _selectedCollection.value?.let { coll ->
             val newDone = if (done)

@@ -3,8 +3,8 @@ package com.example.plauenblod.viewmodel.state.saver
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.mapSaver
 import com.example.plauenblod.feature.route.model.routeProperty.Difficulty
-import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import com.example.plauenblod.feature.route.model.routeProperty.HallSection
+import com.example.plauenblod.feature.route.model.routeProperty.HoldColor
 import com.example.plauenblod.feature.route.model.routeProperty.RelativePosition
 import com.example.plauenblod.feature.route.model.routeProperty.Sector
 import com.example.plauenblod.viewmodel.state.RouteFormState
