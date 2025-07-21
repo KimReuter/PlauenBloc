@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class UserDto(
-    val uid: String? = null,
+    var uid: String? = null,
     val userName: String? = null,
     val role: String? = "USER",
     val bio: String? = null,

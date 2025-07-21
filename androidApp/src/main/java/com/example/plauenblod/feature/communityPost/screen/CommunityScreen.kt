@@ -1,4 +1,4 @@
-package com.example.plauenblod.feature.community.screen
+package com.example.plauenblod.feature.communityPost.screen
 
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
@@ -97,9 +97,9 @@ fun CommunityScreen(
     var newPostContent by remember { mutableStateOf("") }
     val userState by userViewModel.userState.collectAsState()
     val isUserLoaded = userState != null
-    var editingPostId       by remember { mutableStateOf<String?>(null) }
-    var editingCommentId    by remember { mutableStateOf<String?>(null) }
-    var editingCommentText  by remember { mutableStateOf("") }
+    var editingPostId by remember { mutableStateOf<String?>(null) }
+    var editingCommentId by remember { mutableStateOf<String?>(null) }
+    var editingCommentText by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         userViewModel.loadAllUsers()
@@ -347,17 +347,18 @@ fun CommunityScreen(
                                 )
                             }
                         } else {
-                            items(pinboardPosts) { post ->
+                            items(
+                                items = pinboardPosts,
+                                key = { it.id }
+                            ) { post ->
+
+                                val comments by remember(post.id) { pinBoardViewModel.commentsFor(post.id)}.collectAsState()
 
                                 val displayName = allUsers
                                     .firstOrNull { it.uid == post.authorId }
                                     ?.userName
                                     ?: "Unbekannt"
 
-                                Log.d(
-                                    "CommunityScreen",
-                                    "📌 Displaying post ${post.id} with authorName='${post.authorName}'"
-                                )
                                 PostCard(
                                     post = post,
                                     currentUserId = pinBoardViewModel.currentUserId!!,
@@ -371,7 +372,7 @@ fun CommunityScreen(
                                     onCommentSubmit = { comment ->
                                         val newComment = PostComment().apply {
                                             authorId = currentUserId!!
-                                            authorName = displayName
+                                            authorName = userViewModel.userName.value ?: "Unbekannt"
                                             authorImageUrl = userViewModel.userProfileImageUrl.value
                                             content = comment
                                             timestamp =
@@ -415,7 +416,8 @@ fun CommunityScreen(
                                     },
                                     onCommentAuthorClick = { authorId ->
                                         onUserClick(UserDto(uid = authorId, userName = null))
-                                    }
+                                    },
+                                    comments = comments
                                 )
                             }
                         }

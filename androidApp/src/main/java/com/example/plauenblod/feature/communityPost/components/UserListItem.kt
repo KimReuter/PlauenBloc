@@ -1,4 +1,4 @@
-package com.example.plauenblod.feature.community.component
+package com.example.plauenblod.feature.communityPost.components
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween

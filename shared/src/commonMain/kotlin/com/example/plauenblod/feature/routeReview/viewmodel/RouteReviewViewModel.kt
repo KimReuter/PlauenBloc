@@ -30,7 +30,6 @@ class RouteReviewViewModel(
         }
     }
 
-
     fun addReview(
         routeId: String,
         stars: Int,

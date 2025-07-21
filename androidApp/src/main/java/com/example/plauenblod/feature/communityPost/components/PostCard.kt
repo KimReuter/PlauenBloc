@@ -68,7 +68,8 @@ fun PostCard(
     onCommentAuthorClick: (String) -> Unit,
     onEditPost: (CommunityPost) -> Unit,
     onDeletePost: (CommunityPost) -> Unit,
-    pinboardViewModel: PinboardViewModel = koinInject()
+    pinboardViewModel: PinboardViewModel = koinInject(),
+    comments: List<PostComment> = emptyList()
 ) {
     Card(
         modifier = Modifier
@@ -163,8 +164,8 @@ fun PostCard(
                     )
                 }
 
-                if (post.comments.isNotEmpty()) {
-                    val count = post.comments.size
+                if (comments.isNotEmpty()) {
+                    val count = comments.size
                     Text(
                         text = "$count ${if (count == 1) "Kommentar" else "Kommentare"}",
                         style = MaterialTheme.typography.bodySmall
@@ -172,7 +173,7 @@ fun PostCard(
                 }
             }
 
-            post.comments.forEach { comment ->
+            comments.forEach { comment ->
                 if (editingPostId == post.id && editingCommentId == comment.id) {
                     OutlinedTextField(
                         value = editingCommentText,

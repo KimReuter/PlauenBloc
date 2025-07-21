@@ -14,9 +14,15 @@ import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
 import com.example.plauenblod.feature.communityPost.repository.PinBoardRepository
 import com.example.plauenblod.feature.communityPost.repository.PinBoardRepositoryImpl
 import com.example.plauenblod.feature.communityPost.viewModel.PinboardViewModel
+import com.example.plauenblod.feature.dashboard.repository.NewsPostRepository
+import com.example.plauenblod.feature.dashboard.repository.NewsPostRepositoryImpl
+import com.example.plauenblod.feature.dashboard.viewModel.DashboardViewModel
 import com.example.plauenblod.feature.imageUpload.repository.CloudinaryRepository
 import com.example.plauenblod.feature.imageUpload.repository.CloudinaryRepositoryImpl
 import com.example.plauenblod.feature.imageUpload.viewModel.ImageUploadViewModel
+import com.example.plauenblod.feature.ranking.repository.LeaderboardRepository
+import com.example.plauenblod.feature.ranking.repository.LeaderboardRepositoryImpl
+import com.example.plauenblod.feature.ranking.viewModel.LeaderboardViewModel
 import com.example.plauenblod.feature.routeReview.viewmodel.RouteReviewViewModel
 import com.example.plauenblod.feature.route.viewmodel.RouteViewModel
 import com.example.plauenblod.feature.routeCollection.repository.RouteCollectionRepository
@@ -52,6 +58,10 @@ val appModule = module {
 
     single<RouteCollectionRepository> { RouteCollectionRepositoryImpl() }
 
+    single<NewsPostRepository> { NewsPostRepositoryImpl() }
+
+    single<LeaderboardRepository> { LeaderboardRepositoryImpl() }
+
     single { AuthViewModel(get(), get()) }
 
     single { RouteViewModel(get(), get()) }
@@ -69,6 +79,10 @@ val appModule = module {
     single { RouteCollectionViewModel(get()) }
 
     single { RouteSelectionViewModel(get()) }
+
+    single { DashboardViewModel(get(), get(), get()) }
+
+    single { LeaderboardViewModel(get(), get()) }
 
     single { createCloudinaryApi() }
 

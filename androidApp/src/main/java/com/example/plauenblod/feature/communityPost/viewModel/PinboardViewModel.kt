@@ -8,7 +8,9 @@ import com.example.plauenblod.feature.communityPost.model.CommunityPost
 import com.example.plauenblod.feature.communityPost.model.PostComment
 import com.example.plauenblod.feature.communityPost.repository.PinBoardRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class PinboardViewModel(
@@ -78,7 +80,6 @@ val currentUserId get() = authViewModel.userId.value
         updatePost(post.id, newContent)
     }
 
-
     fun deletePost(postId: String) {
         viewModelScope.launch {
             try {
@@ -114,6 +115,9 @@ val currentUserId get() = authViewModel.userId.value
         if (!canEditComment(comment)) return
         updateComment(postId, comment.id, newContent)
     }
+
+    fun commentsFor(postId: String) = repository.observeComments(postId)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     fun updateComment(postId: String, commentId: String, newContent: String) {
         viewModelScope.launch {

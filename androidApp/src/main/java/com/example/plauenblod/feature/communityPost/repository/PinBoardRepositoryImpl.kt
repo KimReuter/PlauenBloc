@@ -60,40 +60,44 @@ class PinBoardRepositoryImpl(
     }
 
     override suspend fun addComment(postId: String, comment: PostComment) {
-        val postRef = postsCollection.document(postId)
-        val commentWithId = comment.apply {
-            if (id.isEmpty()) id = UUID.randomUUID().toString()
-        }
-        postRef.update("comments", FieldValue.arrayUnion(commentWithId)).await()
+        val col = postsCollection
+            .document(postId)
+            .collection("comments")
+        if (comment.id.isEmpty()) comment.id = UUID.randomUUID().toString()
+        col.document(comment.id)
+            .set(comment)
+            .await()
     }
 
-
     override suspend fun updateComment(postId: String, commentId: String, newContent: String) {
-        val postRef = db.collection("community_posts").document(postId)
-        val snapshot = postRef.get().await()
-        val post = snapshot.toObject(CommunityPost::class.java) ?: return
-        val updatedComments = post.comments.map { c ->
-            if (c.id == commentId) {
-                PostComment().apply {
-                    id = c.id
-                    authorId = c.authorId
-                    authorName = c.authorName
-                    authorImageUrl = c.authorImageUrl
-                    content = newContent
-                    timestamp = c.timestamp
-                }
-            } else c
-        }
-        postRef.update("comments", updatedComments).await()
+        postsCollection
+            .document(postId)
+            .collection("comments")
+            .document(commentId)
+            .update("content", newContent)
+            .await()
     }
 
     override suspend fun deleteComment(postId: String, commentId: String) {
-        Log.d("PinBoardRepo", "→ deleteComment: removing $commentId from post $postId")
-        val postRef = db.collection("community_posts").document(postId)
-        val snapshot = postRef.get().await()
-        val post = snapshot.toObject(CommunityPost::class.java) ?: return
-        val updatedComments = post.comments.filter { it.id != commentId }
-        postRef.update("comments", updatedComments).await()
+        postsCollection
+            .document(postId)
+            .collection("comments")
+            .document(commentId)
+            .delete()
+            .await()
+    }
+
+    override fun observeComments(postId: String): Flow<List<PostComment>> = callbackFlow {
+        val sub = postsCollection
+            .document(postId)
+            .collection("comments")
+            .orderBy("timestamp")
+            .addSnapshotListener { snap, e ->
+                if (e != null || snap == null) { close(e); return@addSnapshotListener }
+                val comments = snap.documents.mapNotNull { it.toObject(PostComment::class.java) }
+                trySend(comments)
+            }
+        awaitClose { sub.remove() }
     }
 
     override suspend fun addReaction(postId: String, emoji: String) {

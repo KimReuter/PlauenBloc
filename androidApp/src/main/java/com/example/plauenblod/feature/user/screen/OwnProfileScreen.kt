@@ -31,6 +31,7 @@ import android.util.Log
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
@@ -101,7 +102,29 @@ fun OwnProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Profil") }
+                title = { Text("Profil") },
+                actions = {
+                    var showMenu by rememberSaveable { mutableStateOf(false) }
+
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(
+                            imageVector = Icons.Default.MoreVert,
+                            contentDescription = "Mehr Optionen"
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = showMenu,
+                        onDismissRequest = { showMenu = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Abmelden") },
+                            onClick = {
+                                showMenu = false
+                                onLogout()
+                            }
+                        )
+                    }
+                }
             )
         }
     ) { padding ->
@@ -114,6 +137,7 @@ fun OwnProfileScreen(
                 .padding(16.dp)
                 .verticalScroll(scrollState)
         ) {
+
             Box {
                 AsyncImage(
                     model = imageUrl,

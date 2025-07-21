@@ -30,15 +30,16 @@ import com.example.plauenblod.feature.auth.viewmodel.AuthViewModel
 import com.example.plauenblod.feature.authentication.screen.AuthScreen
 import com.example.plauenblod.feature.chat.screen.ChatScreen
 import com.example.plauenblod.feature.chat.viewmodel.ChatViewModel
-import com.example.plauenblod.feature.community.screen.CommunityScreen
-import com.example.plauenblod.feature.communityPost.viewModel.PinboardViewModel
+import com.example.plauenblod.feature.communityPost.screen.CommunityScreen
+import com.example.plauenblod.feature.dashboard.screen.DashboardScreen
+import com.example.plauenblod.feature.dashboard.screen.NewsDetailScreen
+import com.example.plauenblod.feature.dashboard.viewModel.DashboardViewModel
 import com.example.plauenblod.feature.route.screen.RouteDetailScreen
 import com.example.plauenblod.feature.route.screen.RouteScreen
 import com.example.plauenblod.feature.routeCollection.screen.CollectionDetailScreen
 import com.example.plauenblod.feature.routeCollection.screen.CollectionFormScreen
 import com.example.plauenblod.feature.routeCollection.screen.RouteCollectionsScreen
 import com.example.plauenblod.feature.routeCollection.viewModel.RouteCollectionViewModel
-import com.example.plauenblod.feature.routeCollection.viewModel.RouteSelectionViewModel
 import com.example.plauenblod.feature.user.screen.OwnProfileScreen
 import com.example.plauenblod.feature.user.screen.UserProfileScreen
 import com.example.plauenblod.feature.user.viewmodel.UserViewModel
@@ -92,6 +93,11 @@ data class ChatRoute(
     val targetUserId: String
 )
 
+@Serializable
+data class NewsDetailRoute(
+    val postId: String
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppStart(
@@ -99,8 +105,7 @@ fun AppStart(
     userViewModel: UserViewModel = koinInject(),
     authViewModel: AuthViewModel = koinInject(),
     chatViewModel: ChatViewModel = koinInject(),
-    pinboardViewModel: PinboardViewModel = koinInject(),
-    routeSelectionViewModel: RouteSelectionViewModel = koinInject(),
+    dashboardViewModel: DashboardViewModel = koinInject(),
     routeCollectionViewModel: RouteCollectionViewModel = koinInject()
 ) {
     val navController = rememberNavController()
@@ -151,7 +156,7 @@ fun AppStart(
             }
 
             composable<DashboardRoute> {
-                HomeScreen()
+                DashboardScreen(navController = navController)
             }
 
             composable<BoulderRoute> {
@@ -302,6 +307,21 @@ fun AppStart(
                         )
                     },
                     navController = navController
+                )
+            }
+
+            composable<NewsDetailRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<NewsDetailRoute>()
+                val postId = args.postId
+
+                LaunchedEffect(postId) {
+                    dashboardViewModel.loadPost(postId)
+                }
+
+                NewsDetailScreen(
+                    postId = postId,
+                    dashboardViewModel = dashboardViewModel,
+                    onBack = { navController.popBackStack() }
                 )
             }
         }
