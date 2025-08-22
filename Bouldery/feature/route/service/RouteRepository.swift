@@ -12,4 +12,5 @@ protocol RouteRepository {
     func addRoute(_ route: Route) async throws
     func updateRoute(_ route: Route) async throws
     func deleteRoute(_ routeId: String) async throws
+    func takenNumbers(hall: HallSection, sector: Sector) async throws -> Set<Int>
 }

@@ -11,13 +11,13 @@ import FirebaseFirestore
 struct Route: Identifiable, Codable, Equatable {
     @DocumentID var id: String?
     var name: String
+    var setter: String
     var hall: HallSection
     var sector: Sector
     var holdColor: HoldColor
     var difficulty: Difficulty
     var number: Int
     var description: String
-    var setter: String
     var x: Double   // 0...1 normalisiert
     var y: Double   // 0...1 normalisiert
     var points: Int

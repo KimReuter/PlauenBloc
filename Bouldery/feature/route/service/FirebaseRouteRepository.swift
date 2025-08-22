@@ -28,4 +28,14 @@ final class FirebaseRouteRepository: RouteRepository {
     func deleteRoute(_ routeId: String) async throws {
         try await db.document(routeId).delete()
     }
+    
+    func takenNumbers(hall: HallSection, sector: Sector) async throws -> Set<Int> {
+            let snap = try await db
+                .whereField("hall", isEqualTo: hall.rawValue)
+                .whereField("sector", isEqualTo: sector.rawValue)
+                .getDocuments()
+
+            let nums = snap.documents.compactMap { $0.data()["number"] as? Int }
+            return Set(nums)
+        }
 }

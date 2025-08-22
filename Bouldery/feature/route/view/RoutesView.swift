@@ -8,27 +8,36 @@
 import SwiftUI
 
 struct RouteView: View {
+    
     @StateObject private var vm = MapViewModel()
+    @EnvironmentObject var authVM: AuthViewModel
+    
     @State private var showSearch = false
     @State private var searchText = ""
     @FocusState private var searchFocused: Bool
-
+    
+    @State private var showCreateSheet = false
+    
+    private var isOperator: Bool {
+        authVM.userRole == .OPERATOR
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
                 AppTheme.Palette.bg.ignoresSafeArea()
-
+                
                 VStack(spacing: 12) {
                     if showSearch {
                         HStack {
                             Image(systemName: "magnifyingglass")
                                 .foregroundStyle(.secondary)
-
+                            
                             TextField("Suche nach Routen…", text: $searchText)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled(true)
                                 .focused($searchFocused)
-
+                            
                             if !searchText.isEmpty {
                                 Button {
                                     searchText = ""
@@ -51,7 +60,7 @@ struct RouteView: View {
                         .transition(.move(edge: .top).combined(with: .opacity))
                         .onAppear { searchFocused = true }
                     }
-
+                    
                     ReadOnlyMapView(routes: vm.routes) { _ in }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -61,39 +70,48 @@ struct RouteView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    
                     Button {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             showSearch.toggle()
                             if !showSearch { searchText = "" }
                         }
-                    } label: { Image(systemName: "magnifyingglass") }
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                        Menu {
-                            Button {
-                                // TODO: Filter öffnen
-                                print("Filter")
-                            } label: {
-                                Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
-                            }
-
-                            Button {
-                                // TODO: Routenliste anzeigen
-                                print("Als Liste anzeigen")
-                            } label: {
-                                Label("Als Liste anzeigen", systemImage: "list.bullet")
-                            }
-
-                            Button {
-                                // TODO: Neuer Route-Flow
-                                print("Neue Route")
-                            } label: {
-                                Label("Neue Route", systemImage: "plus")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis.vertical") 
-                        }
+                    } label: {
+                        Image(systemName: "magnifyingglass")
                     }
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            // TODO: Filter öffnen
+                            print("Filter")
+                        } label: {
+                            Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                        }
+                        
+                        Button {
+                            // TODO: Routenliste anzeigen
+                            print("Als Liste anzeigen")
+                        } label: {
+                            Label("Als Liste anzeigen", systemImage: "list.bullet")
+                        }
+                        
+                        Button {
+                            showCreateSheet = true
+                        } label: {
+                            Label("Neue Route", systemImage: "plus")
+                        }
+                        
+                    } label: {
+                        Image(systemName: "ellipsis").tint(.brandGreen)
+                    }
+                }
+                
+                
+            }
+            .sheet(isPresented: $showCreateSheet) {
+                CreateRouteSheet()
             }
             .task { await vm.loadRoutes() }
         }
