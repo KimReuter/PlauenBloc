@@ -9,20 +9,22 @@ import Foundation
 
 @MainActor
 final class RouteViewModel: ObservableObject {
+    
+    private let service: RouteServiceing
     private let repo: RouteRepository
+    
     @Published var routes: [Route] = []
-
-    init(repo: RouteRepository = FirebaseRouteRepository()) {
+    @Published var isLoading = false
+    @Published var error: String?
+    
+    init(repo: RouteRepository = FirebaseRouteRepository(), service: RouteServiceing = RouteService()) {
         self.repo = repo
+        self.service = service
     }
-
-    func loadRoutes() {
-        Task {
-            do {
-                routes = try await repo.getRoutes()
-            } catch {
-                print("❌ Fehler beim Laden der Routen: \(error)")
-            }
-        }
+    
+    func loadRoutes() async {
+        isLoading = true; defer { isLoading = false }
+        do { routes = try await service.listRoutes() }
+        catch { self.error = error.localizedDescription }
     }
 }

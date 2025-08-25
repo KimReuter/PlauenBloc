@@ -10,41 +10,37 @@ import SwiftUI
 
 struct ReadOnlyMapView: View {
     let routes: [Route]
+    var hall: HallSection
     var onSelectRoute: ((Route) -> Void)?
-
+    
+    private var imageName: String {
+        switch hall {
+        case .FRONT: return "boulderhalle_grundriss_vordere_halle_klein"
+        case .BACK:  return "boulderhalle_grundriss_hintereHalle_ klein"
+        }
+    }
+    
+    private var visibleRoutes: [Route] {
+        routes.filter { $0.hall == hall }
+    }
+    
     var body: some View {
-        GeometryReader { geo in
-            Image("boulderhalle_grundriss_vordere_halle_klein")
+            Image(imageName)
                 .resizable()
                 .scaledToFit()
-                .frame(maxWidth: .infinity)
                 .overlay {
-                    ForEach(routes) { route in
-                        Circle()
-                            .fill(color(for: route.holdColor))
-                            .frame(width: 16, height: 16)
-                            .overlay(Circle().stroke(.white, lineWidth: 2))
-                            .position(x: route.x * geo.size.width,
-                                      y: route.y * geo.size.height)
-                            .onTapGesture { onSelectRoute?(route) }
+                    GeometryReader { ig in
+                        ForEach(visibleRoutes) { route in
+                            Circle()
+                                .fill(route.difficulty.color)
+                                .frame(width: 16, height: 16)
+                                .overlay(Circle().stroke(.white, lineWidth: 2))
+                                .position(x: route.x * ig.size.width,
+                                          y: route.y * ig.size.height)
+                                .onTapGesture { onSelectRoute?(route) }
+                        }
                     }
                 }
+                .clipped()
         }
-    }
-
-    private func color(for hold: HoldColor) -> Color {
-        switch hold {
-        case .PINK: return .pink
-        case .WHITE: return .white
-        case .YELLOW: return .yellow
-        case .BLUE: return .blue
-        case .GREEN: return .green
-        case .RED: return .red
-        case .BROWN: return .brown
-        case .TURQUOISE: return .cyan
-        case .GREY: return .gray
-        case .PURPLE: return .purple
-        case .BLACK: return .black
-        }
-    }
 }

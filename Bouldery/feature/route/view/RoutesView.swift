@@ -15,7 +15,7 @@ struct RouteView: View {
     @State private var showSearch = false
     @State private var searchText = ""
     @FocusState private var searchFocused: Bool
-    
+    @State private var hall: HallSection = .FRONT
     @State private var showCreateSheet = false
     
     private var isOperator: Bool {
@@ -27,44 +27,49 @@ struct RouteView: View {
             ZStack {
                 AppTheme.Palette.bg.ignoresSafeArea()
                 
-                VStack(spacing: 12) {
-                    if showSearch {
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundStyle(.secondary)
-                            
-                            TextField("Suche nach Routen…", text: $searchText)
-                                .textInputAutocapitalization(.never)
-                                .autocorrectionDisabled(true)
-                                .focused($searchFocused)
-                            
-                            if !searchText.isEmpty {
-                                Button {
-                                    searchText = ""
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundStyle(.secondary)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .padding(10)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(.systemGray6))
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(AppTheme.Palette.green.opacity(0.5), lineWidth: 1.5)
-                        )
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                        .onAppear { searchFocused = true }
-                    }
+                GeometryReader { proxy in
+                    let availableH = proxy.size.height
+                    let mapH = min(560, max(300, availableH - 220))
                     
-                    ReadOnlyMapView(routes: vm.routes) { _ in }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    VStack(spacing: 16) {
+                        if showSearch {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundStyle(.secondary)
+                                TextField("Suche nach Routen…", text: $searchText)
+                                    .foregroundStyle(.background)
+                                    .textInputAutocapitalization(.never)
+                                    .autocorrectionDisabled(true)
+                                    .focused($searchFocused)
+                                if !searchText.isEmpty {
+                                    Button {
+                                        searchText = ""
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 24)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color(.systemGray6)))
+                            .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppTheme.Palette.green.opacity(0.5), lineWidth: 1.5))
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                            .onAppear { searchFocused = true }
+                        }
+                        
+                        HallSelectionButtons(selectedHall: $hall)
+                            .padding(.top, 32)
+                        
+                        ReadOnlyMapView(routes: vm.routes, hall: hall) { _ in }
+                            .frame(height: 500)
+                            .padding(.top, 32)
+                        
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.horizontal)
                 }
-                .padding()
             }
             .navigationTitle("Routen")
             .navigationBarTitleDisplayMode(.inline)
@@ -117,3 +122,4 @@ struct RouteView: View {
         }
     }
 }
+
